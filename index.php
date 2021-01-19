@@ -1,7 +1,18 @@
 <?php
 // показывать или нет выполненные задачи
-$show_complete_tasks = rand(0, 1);
+    $show_complete_tasks = rand(0, 1);
 
+    //Массивы <module2-task1>
+    
+    $arrCategory = ['Входящие', 'Учеба', 'Работа', 'Домашние дела', 'Авто'];
+    $arrCaseSheet = [
+        ['Собеседование в IT компании', '01.12.2019', 'Работа', false],
+        ['Выполнить тестовое задание', '25.12.2019', 'Работа', false],
+        ['Сделать задание первого раздела', '21.12.2019', 'Учеба', true],
+        ['Встреча с другом', '22.12.2019', 'Входящие', false],
+        ['Купить корм для кота', null, 'Домашние дела', false],
+        ['Заказать пиццу', null, 'Домашние дела', false],
+    ];
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -43,10 +54,19 @@ $show_complete_tasks = rand(0, 1);
 
                 <nav class="main-navigation">
                     <ul class="main-navigation__list">
-                        <li class="main-navigation__list-item">
-                            <a class="main-navigation__list-item-link" href="#">Название проекта</a>
-                            <span class="main-navigation__list-item-count">0</span>
-                        </li>
+                        <?php
+                            $index = 0;
+                            $num = count($arrCategory);
+
+                            while ($index < $num): ?>
+
+                                <li class="main-navigation__list-item">
+                                    <a class="main-navigation__list-item-link" href="#"><?=$arrCategory[$index]?></a>
+                                    <span class="main-navigation__list-item-count">0</span>
+                                </li>
+
+                            <?php $index++; ?>
+                        <?php endwhile; ?>
                     </ul>
                 </nav>
 
@@ -81,36 +101,28 @@ $show_complete_tasks = rand(0, 1);
                 </div>
 
                 <table class="tasks">
-                    <tr class="tasks__item task">
-                        <td class="task__select">
-                            <label class="checkbox task__checkbox">
-                                <input class="checkbox__input visually-hidden task__checkbox" type="checkbox" value="1">
-                                <span class="checkbox__text">Сделать главную страницу Дела в порядке</span>
-                            </label>
-                        </td>
 
-                        <td class="task__file">
-                            <a class="download-link" href="#">Home.psd</a>
-                        </td>
+                    <?php
+                    $index = 0;
+                    $num = count($arrCaseSheet);
 
-                        <td class="task__date"></td>
-                    </tr>
-                    <!--показывать следующий тег <tr/>, если переменная $show_complete_tasks равна единице-->
+                    while ($index < $num): ?>
 
-                    <?php if($show_complete_tasks == 1): ?>
+                        <?php if($show_complete_tasks == 0 AND $arrCaseSheet[$index][3]): $index++; continue;?><?php endif; ?>
 
-                        <tr class="tasks__item task task--completed">
-                            <td class="task__select">
-                                <label class="checkbox task__checkbox">
-                                    <input class="checkbox__input visually-hidden" type="checkbox" checked>
-                                    <span class="checkbox__text">Записаться на интенсив "Базовый PHP"</span>
-                                </label>
-                            </td>
-                            <td class="task__date">10.10.2019</td>
-                            <td class="task__controls"></td>
-                        </tr>
+                            <tr class="tasks__item task <?=($arrCaseSheet[$index][3] ? 'task--completed' : '' )?> "type="checkbox">
+                                <td class="task__select">
+                                    <label class="checkbox task__checkbox">
+                                        <input class="checkbox__input visually-hidden task__checkbox" type="checkbox" value="1">
+                                        <span class="checkbox__text"><?=$arrCaseSheet[$index][0]?></span>
+                                    </label>
+                                </td>
+                                <td class="task__date"><?=$arrCaseSheet[$index][1]?></td>
+                            </tr>
 
-                    <?php endif; ?>
+                    <?php $index++; ?>
+                    <?php endwhile; ?>
+
                 </table>
             </main>
         </div>
