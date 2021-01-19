@@ -1,7 +1,7 @@
 # Личный проект «Дела в Порядке»
 
 * Студент: [Владислав Журкин](https://up.htmlacademy.ru/php/12/user/1153943).
-* Наставник: [Анатолий Пашин](https://htmlacademy.ru/profile/id1200767).
+* Наставник: [Игорь Марченков](https://htmlacademy.ru/profile/id1402001).
 
 ---
 
