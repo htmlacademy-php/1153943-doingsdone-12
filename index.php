@@ -6,12 +6,48 @@
     
     $arrCategory = ['Входящие', 'Учеба', 'Работа', 'Домашние дела', 'Авто'];
     $arrCaseSheet = [
-        ['Собеседование в IT компании', '01.12.2019', 'Работа', false],
-        ['Выполнить тестовое задание', '25.12.2019', 'Работа', false],
-        ['Сделать задание первого раздела', '21.12.2019', 'Учеба', true],
-        ['Встреча с другом', '22.12.2019', 'Входящие', false],
-        ['Купить корм для кота', null, 'Домашние дела', false],
-        ['Заказать пиццу', null, 'Домашние дела', false],
+        [
+            'id' => 1,
+            'name' => 'Собеседование в IT компании',
+            'date' => '01.12.2019',
+            'category' => 'Работа',
+            'isDone' => false,
+        ],
+        [
+            'id' => 2,
+            'name' => 'Выполнить тестовое задание',
+            'date' => '25.12.2019',
+            'category' => 'Работа',
+            'isDone' => false,
+        ],
+        [
+            'id' => 3,
+            'name' => 'Сделать задание первого раздела',
+            'date' => '21.12.2019',
+            'category' => 'Учеба',
+            'isDone' => true,
+        ],
+        [
+            'id' => 4,
+            'name' => 'Встреча с другом',
+            'date' => '22.12.2019',
+            'category' => 'Входящие',
+            'isDone' => false,
+        ],
+        [
+            'id' => 5,
+            'name' => 'Купить корм для кота',
+            'date' => null,
+            'category' => 'Домашние дела',
+            'isDone' => false,
+        ],
+        [
+            'id' => 6,
+            'name' => 'Заказать пиццу',
+            'date' => null,
+            'category' => 'Домашние дела',
+            'isDone' => false,
+        ],
     ];
 ?>
 <!DOCTYPE html>
@@ -54,19 +90,14 @@
 
                 <nav class="main-navigation">
                     <ul class="main-navigation__list">
-                        <?php
-                            $index = 0;
-                            $num = count($arrCategory);
-
-                            while ($index < $num): ?>
+                        <?php foreach ($arrCategory as $task): ?>
 
                                 <li class="main-navigation__list-item">
-                                    <a class="main-navigation__list-item-link" href="#"><?=$arrCategory[$index]?></a>
+                                    <a class="main-navigation__list-item-link" href="#"><?=$task?></a>
                                     <span class="main-navigation__list-item-count">0</span>
                                 </li>
 
-                            <?php $index++; ?>
-                        <?php endwhile; ?>
+                        <?php endforeach; ?>
                     </ul>
                 </nav>
 
@@ -102,26 +133,21 @@
 
                 <table class="tasks">
 
-                    <?php
-                    $index = 0;
-                    $num = count($arrCaseSheet);
+                    <?php foreach ($arrCaseSheet as $task): ?>
 
-                    while ($index < $num): ?>
+                        <?php if($show_complete_tasks == 0 && $task['isDone']): continue;?><?php endif; ?>
 
-                        <?php if($show_complete_tasks == 0 AND $arrCaseSheet[$index][3]): $index++; continue;?><?php endif; ?>
-
-                            <tr class="tasks__item task <?=($arrCaseSheet[$index][3] ? 'task--completed' : '' )?> "type="checkbox">
+                            <tr class="tasks__item task <?=($task['isDone'] ? 'task--completed' : '' )?> "type="checkbox">
                                 <td class="task__select">
                                     <label class="checkbox task__checkbox">
                                         <input class="checkbox__input visually-hidden task__checkbox" type="checkbox" value="1">
-                                        <span class="checkbox__text"><?=$arrCaseSheet[$index][0]?></span>
+                                        <span class="checkbox__text"><?=$task['name']?></span>
                                     </label>
                                 </td>
-                                <td class="task__date"><?=$arrCaseSheet[$index][1]?></td>
+                                <td class="task__date"><?=$task['date']?></td>
                             </tr>
 
-                    <?php $index++; ?>
-                    <?php endwhile; ?>
+                    <?php endforeach; ?>
 
                 </table>
             </main>
