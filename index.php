@@ -5,6 +5,7 @@
     //Массивы <module2-task1>
     
     $arrCategory = ['Входящие', 'Учеба', 'Работа', 'Домашние дела', 'Авто'];
+
     $arrCaseSheet = [
         [
             'id' => 1,
@@ -49,7 +50,22 @@
             'isDone' => false,
         ],
     ];
+
+    // Функция <module2-task2>
+
+    function getCountFiltration($arr, $name) {
+        $count = 0;
+
+        for($i = 0; $i < count($arr); $i++) {
+            if($arr[$i]['category'] === $name) {
+                $count++; 
+            }
+        }
+
+        return $count;
+    }
 ?>
+
 <!DOCTYPE html>
 <html lang="ru">
 
@@ -94,7 +110,7 @@
 
                                 <li class="main-navigation__list-item">
                                     <a class="main-navigation__list-item-link" href="#"><?=$task?></a>
-                                    <span class="main-navigation__list-item-count">0</span>
+                                    <span class="main-navigation__list-item-count"><?= getCountFiltration($arrCaseSheet, $task)?></span>
                                 </li>
 
                         <?php endforeach; ?>
