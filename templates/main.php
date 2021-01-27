@@ -5,10 +5,11 @@
         <ul class="main-navigation__list">
             <?php foreach ($arrCategory as $task): ?>
 
-                    <li class="main-navigation__list-item">
-                        <a class="main-navigation__list-item-link" href="#"><?=htmlspecialchars($task)?></a>
-                        <span class="main-navigation__list-item-count"><?= getCountFiltration($arrCaseSheet, $task)?></span>
-                    </li>
+                <li class="main-navigation__list-item">
+                    <a class="main-navigation__list-item-link" href="#"><?=htmlspecialchars($task)?></a>
+                    <!-- <span class="main-navigation__list-item-count"><?=getCountFiltration($arrCaseSheet, $task)?></span> -->
+                    <span class="main-navigation__list-item-count"><?=$getCountFiltration?></span>
+                </li>
 
             <?php endforeach; ?>
         </ul>
@@ -47,9 +48,11 @@
 
         <?php foreach ($arrCaseSheet as $task): ?>
 
-            <?php if($show_complete_tasks == 0 && $task['isDone']): continue;?><?php endif; ?>
+            <?php if(!$show_complete_tasks && $task['isDone']): continue;?><?php endif; ?>
 
-                <tr class="tasks__item task <?=($task['isDone'] ? 'task--completed' : '' )?> "type="checkbox">
+                <tr class="tasks__item task 
+                <?=timeTask($task['date']) < 24 && !$task['isDone'] && $task['date'] ? 'task--important' : '' ?> 
+                <?=$task['isDone'] ? 'task--completed' : '' ?> "type="checkbox">
                     <td class="task__select">
                         <label class="checkbox task__checkbox">
                             <input class="checkbox__input visually-hidden task__checkbox" type="checkbox" value="1">

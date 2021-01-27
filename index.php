@@ -17,21 +17,21 @@
         [
             'id' => 2,
             'name' => 'Выполнить тестовое задание',
-            'date' => '25.12.2019',
+            'date' => '30.01.2021',
             'category' => 'Работа',
             'isDone' => false,
         ],
         [
             'id' => 3,
             'name' => 'Сделать задание первого раздела',
-            'date' => '21.12.2019',
+            'date' => '28.01.2021',
             'category' => 'Учеба',
             'isDone' => true,
         ],
         [
             'id' => 4,
             'name' => 'Встреча с другом',
-            'date' => '22.12.2019',
+            'date' => '28.01.2021',
             'category' => 'Входящие',
             'isDone' => false,
         ],
@@ -51,21 +51,49 @@
         ],
     ];
 
+    // function getCountFiltration($arr, $name) {
+    //     $count = 0;
+
+    //     for($i = 0; $i < count($arr); $i++) {
+    //         if($arr[$i]['category'] == $name) {
+    //             $count++; 
+    //         }
+    //     }
+
+    //     return $count;
+    // };
+
     function getCountFiltration($arr, $name) {
         $count = 0;
+        $i = 0;
 
-        for($i = 0; $i < count($arr); $i++) {
-            if($arr[$i]['category'] === $name) {
+        foreach($arr as $task) {
+            if($task['category'] == $name[$i]) {
                 $count++; 
             }
         }
 
+        $i++;
+
         return $count;
-    }
+    };
+
+    $countFilter = getCountFiltration($arrCaseSheet, $arrCategory);
+
+    // time <module3-task2>
+
+    function timeTask($date){
+        $timeNow = time();
+        $timeTask = strtotime($date);
+
+        $total = $timeTask - $timeNow;
+
+        return floor($total / 3600);
+    };
 
     // Шаблонизация <module3-task1>
 
-    $page_content = include_template('main.php', ['arrCategory' => $arrCategory, 'arrCaseSheet' => $arrCaseSheet, 'show_complete_tasks' => $show_complete_tasks]);
+    $page_content = include_template('main.php', ['getCountFiltration' => $countFilter, 'arrCategory' => $arrCategory, 'arrCaseSheet' => $arrCaseSheet, 'show_complete_tasks' => $show_complete_tasks]);
     $layout_content = include_template('layout.php', ['content' => $page_content, 'title' => 'Дела в порядке', 'user' => 'Константин']);
 
     print($layout_content);
