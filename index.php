@@ -2,9 +2,22 @@
 
     require_once 'helpers.php';
 
+    $nameUser = 'Константин';
+
     $show_complete_tasks = rand(0, 1);
     
-    $arrCategory = ['Входящие', 'Учеба', 'Работа', 'Домашние дела', 'Авто'];
+    $arrCategory = [
+        ['id' => 1,
+        'name' => "Входящие"],
+        ['id' => 2,
+        'name' => "Учеба"],
+        ['id' => 3,
+        'name' => "Работа"],
+        ['id' => 4,
+        'name' => "Домашние дела"],
+        ['id' => 5,
+        'name' => "Авто"]
+    ];
 
     $arrCaseSheet = [
         [
@@ -51,50 +64,54 @@
         ],
     ];
 
-    // function getCountFiltration($arr, $name) {
-    //     $count = 0;
-
-    //     for($i = 0; $i < count($arr); $i++) {
-    //         if($arr[$i]['category'] == $name) {
-    //             $count++; 
-    //         }
-    //     }
-
-    //     return $count;
-    // };
-
-    function getCountFiltration($arr, $name) {
+    function getCountTasks($caseSheet, $category) {
         $count = 0;
-        $i = 0;
 
-        foreach($arr as $task) {
-            if($task['category'] == $name[$i]) {
-                $count++; 
+        for ($i = 0; $i < count($caseSheet); $i++) { 
+            if($caseSheet[$i]['category'] == $category['name']) {
+                $count++;
             }
         }
-
-        $i++;
 
         return $count;
     };
 
-    $countFilter = getCountFiltration($arrCaseSheet, $arrCategory);
-
-    // time <module3-task2>
-
-    function timeTask($date){
+    function getTimeTask($date){
         $timeNow = time();
-        $timeTask = strtotime($date);
+        $timeTask = strtotime($date['date']);
 
-        $total = $timeTask - $timeNow;
+        $result = ($timeTask - $timeNow) / 3600;
 
-        return floor($total / 3600);
+        if ($result < 24 && $date['date'] && !$date['isDone']) {
+            return true;
+        } 
+        return false;
     };
 
-    // Шаблонизация <module3-task1>
+    // функция добавляет в массив счетчик задач, время и ставит фильтр текста
 
-    $page_content = include_template('main.php', ['getCountFiltration' => $countFilter, 'arrCategory' => $arrCategory, 'arrCaseSheet' => $arrCaseSheet, 'show_complete_tasks' => $show_complete_tasks]);
-    $layout_content = include_template('layout.php', ['content' => $page_content, 'title' => 'Дела в порядке', 'user' => 'Константин']);
+    function updateArray($caseSheet, $category) {
+        for ($i = 0; $i < count($caseSheet); $i++) { 
+            $caseSheet[$i]['dateImportant'] = getTimeTask($caseSheet[$i]);
+
+            $caseSheet[$i]['name'] = htmlspecialchars($caseSheet[$i]['name']);
+            $caseSheet[$i]['category'] = htmlspecialchars($caseSheet[$i]['category']);
+        }
+
+        for ($i = 0; $i < count($category); $i++) { 
+            $category[$i]['count'] = getCountTasks($caseSheet, $category[$i]);
+
+            $category[$i]['name'] = htmlspecialchars($category[$i]['name']);
+        }
+
+        return [$caseSheet, $category];
+    };
+
+    list($arrCaseSheet, $arrCategory) = updateArray($arrCaseSheet, $arrCategory);
+    updateArray($arrCaseSheet, $arrCategory);
+
+    $page_content = include_template('main.php', ['arrCategory' => $arrCategory, 'arrCaseSheet' => $arrCaseSheet, 'show_complete_tasks' => $show_complete_tasks]);
+    $layout_content = include_template('layout.php', ['content' => $page_content, 'title' => 'Дела в порядке', 'user' => $nameUser]);
 
     print($layout_content);
 ?>

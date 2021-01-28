@@ -3,12 +3,11 @@
 
     <nav class="main-navigation">
         <ul class="main-navigation__list">
-            <?php foreach ($arrCategory as $task): ?>
+            <?php foreach ($arrCategory as $category): ?>
 
                 <li class="main-navigation__list-item">
-                    <a class="main-navigation__list-item-link" href="#"><?=htmlspecialchars($task)?></a>
-                    <!-- <span class="main-navigation__list-item-count"><?=getCountFiltration($arrCaseSheet, $task)?></span> -->
-                    <span class="main-navigation__list-item-count"><?=$getCountFiltration?></span>
+                    <a class="main-navigation__list-item-link" href="#"><?=$category['name']?></a>
+                    <span class="main-navigation__list-item-count"><?=$category['count']?></span>
                 </li>
 
             <?php endforeach; ?>
@@ -38,7 +37,7 @@
 
         <label class="checkbox">
 
-            <input class="checkbox__input visually-hidden show_completed"<?php if($show_complete_tasks == 1): ?> checked <?php endif; ?>type="checkbox">
+            <input class="checkbox__input visually-hidden show_completed" <?= $show_complete_tasks ? 'checked' : '' ?> type="checkbox">
 
             <span class="checkbox__text">Показывать выполненные</span>
         </label>
@@ -48,15 +47,15 @@
 
         <?php foreach ($arrCaseSheet as $task): ?>
 
-            <?php if(!$show_complete_tasks && $task['isDone']): continue;?><?php endif; ?>
+            <?php if(!$show_complete_tasks && $task['isDone']): continue?><?php endif; ?>
 
                 <tr class="tasks__item task 
-                <?=timeTask($task['date']) < 24 && !$task['isDone'] && $task['date'] ? 'task--important' : '' ?> 
+                <?=$task['dateImportant'] ? 'task--important' : '' ?> 
                 <?=$task['isDone'] ? 'task--completed' : '' ?> "type="checkbox">
                     <td class="task__select">
                         <label class="checkbox task__checkbox">
                             <input class="checkbox__input visually-hidden task__checkbox" type="checkbox" value="1">
-                            <span class="checkbox__text"><?=htmlspecialchars($task['name'])?></span>
+                            <span class="checkbox__text"><?=$task['name']?></span>
                         </label>
                     </td>
                     <td class="task__date"><?=$task['date']?></td>
