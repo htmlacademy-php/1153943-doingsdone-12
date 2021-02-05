@@ -67,8 +67,8 @@
     function getCountTasks($caseSheet, $category) {
         $count = 0;
 
-        for ($i = 0; $i < count($caseSheet); $i++) { 
-            if($caseSheet[$i]['category'] == $category['name']) {
+        foreach ($caseSheet as $task) { 
+            if($task['category'] == $category) {
                 $count++;
             }
         }
@@ -91,17 +91,17 @@
     // функция добавляет в массив счетчик задач, время и ставит фильтр текста
 
     function updateArray($caseSheet, $category) {
-        for ($i = 0; $i < count($caseSheet); $i++) { 
-            $caseSheet[$i]['dateImportant'] = getTimeTask($caseSheet[$i]);
+        foreach ($caseSheet as $tasks => $key) {
+            $caseSheet[$tasks]['dateImportant'] = getTimeTask($caseSheet[$tasks]);
 
-            $caseSheet[$i]['name'] = htmlspecialchars($caseSheet[$i]['name']);
-            $caseSheet[$i]['category'] = htmlspecialchars($caseSheet[$i]['category']);
+            $caseSheet[$tasks]['name'] = htmlspecialchars($caseSheet[$tasks]['name']);
+            $caseSheet[$tasks]['category'] = htmlspecialchars($caseSheet[$tasks]['category']);
         }
 
-        for ($i = 0; $i < count($category); $i++) { 
-            $category[$i]['count'] = getCountTasks($caseSheet, $category[$i]);
+        foreach ($category as $taskLists => $key) { 
+            $category[$taskLists]['count'] = getCountTasks($caseSheet, $category[$taskLists]['name']);
 
-            $category[$i]['name'] = htmlspecialchars($category[$i]['name']);
+            $category[$taskLists]['name'] = htmlspecialchars($category[$taskLists]['name']);
         }
 
         return [$caseSheet, $category];
