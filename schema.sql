@@ -10,9 +10,9 @@
 
 CREATE TABLE `registration` (
   `id` int(255) NOT NULL,
-  `E-mail` varchar(50) NOT NULL,
-  `Пароль` varchar(40) NOT NULL,
-  `Имя` varchar(20) NOT NULL
+  `e-mail` varchar(50) NOT NULL,
+  `password` varchar(40) NOT NULL,
+  `name` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -23,9 +23,9 @@ CREATE TABLE `registration` (
 
 CREATE TABLE `task` (
   `id` int(255) NOT NULL,
-  `Название` text NOT NULL,
-  `Срок выполнения` text,
-  `Файл` varchar(255) DEFAULT NULL
+  `title` text NOT NULL,
+  `period` text,
+  `file` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
