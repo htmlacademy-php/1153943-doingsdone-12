@@ -1,61 +1,29 @@
---
--- База данных: `schema`
---
+CREATE DATABASE `schema`
+    DEFAULT CHARACTER SET utf8
+    DEFAULT COLLATE utf8_general_ci;
 
--- --------------------------------------------------------
+USE `schema`;
 
---
--- Структура таблицы `registration`
---
+CREATE TABLE `list` (
+    `id` INT(255) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT NOT NULL,
+    `title` text(50) NOT NULL
+);
 
-CREATE TABLE `registration` (
-  `id` int(255) NOT NULL,
-  `e-mail` varchar(50) NOT NULL,
-  `password` varchar(40) NOT NULL,
-  `name` varchar(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE TABLE `users` (
+    `id` INT(255) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `email` varchar(50) NOT NULL UNIQUE,
+    `password` varchar(40) NOT NULL,
+    `name` varchar(20) NOT NULL
+);
 
--- --------------------------------------------------------
-
---
--- Структура таблицы `task`
---
-
-CREATE TABLE `task` (
-  `id` int(255) NOT NULL,
-  `title` text NOT NULL,
-  `period` text,
-  `file` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Индексы сохранённых таблиц
---
-
---
--- Индексы таблицы `registration`
---
-ALTER TABLE `registration`
-  ADD PRIMARY KEY (`id`);
-
---
--- Индексы таблицы `task`
---
-ALTER TABLE `task`
-  ADD PRIMARY KEY (`id`);
-
---
--- AUTO_INCREMENT для сохранённых таблиц
---
-
---
--- AUTO_INCREMENT для таблицы `registration`
---
-ALTER TABLE `registration`
-  MODIFY `id` int(255) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT для таблицы `task`
---
-ALTER TABLE `task`
-  MODIFY `id` int(255) NOT NULL AUTO_INCREMENT;
+CREATE TABLE `tasks` (
+    `id` INT(255) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT NOT NULL,
+    `list_id` INT NOT NULL,
+    `title` text(50) NOT NULL,
+    `period` text(255),
+    `file` varchar(255) DEFAULT NULL,
+    `date_deadline` DATETIME,
+    `is_done` tinyint(1) default 0
+);

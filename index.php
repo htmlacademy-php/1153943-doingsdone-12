@@ -5,7 +5,7 @@
     $nameUser = 'Константин';
 
     $show_complete_tasks = rand(0, 1);
-    
+
     $arrCategory = [
         ['id' => 1,
         'name' => "Входящие"],
@@ -44,7 +44,7 @@
         [
             'id' => 4,
             'name' => 'Встреча с другом',
-            'date' => '28.01.2021',
+            'date' => '05.02.2021',
             'category' => 'Входящие',
             'isDone' => false,
         ],
@@ -67,7 +67,7 @@
     function getCountTasks($caseSheet, $category) {
         $count = 0;
 
-        foreach ($caseSheet as $task) { 
+        foreach ($caseSheet as $task) {
             if($task['category'] == $category) {
                 $count++;
             }
@@ -84,24 +84,24 @@
 
         if ($result < 24 && $date['date'] && !$date['isDone']) {
             return true;
-        } 
+        }
         return false;
     };
 
     // функция добавляет в массив счетчик задач, время и ставит фильтр текста
 
     function updateArray($caseSheet, $category) {
-        foreach ($caseSheet as $tasks => $key) {
-            $caseSheet[$tasks]['dateImportant'] = getTimeTask($caseSheet[$tasks]);
+        foreach ($caseSheet as $key => $tasks) {
+            $caseSheet[$key]['dateImportant'] = getTimeTask($caseSheet[$key]);
 
-            $caseSheet[$tasks]['name'] = htmlspecialchars($caseSheet[$tasks]['name']);
-            $caseSheet[$tasks]['category'] = htmlspecialchars($caseSheet[$tasks]['category']);
+            $caseSheet[$key]['name'] = htmlspecialchars($caseSheet[$key]['name']);
+            $caseSheet[$key]['category'] = htmlspecialchars($caseSheet[$key]['category']);
         }
 
-        foreach ($category as $taskLists => $key) { 
-            $category[$taskLists]['count'] = getCountTasks($caseSheet, $category[$taskLists]['name']);
+        foreach ($category as $key => $taskLists) {
+            $category[$key]['count'] = getCountTasks($caseSheet, $category[$key]['name']);
 
-            $category[$taskLists]['name'] = htmlspecialchars($category[$taskLists]['name']);
+            $category[$key]['name'] = htmlspecialchars($category[$key]['name']);
         }
 
         return [$caseSheet, $category];
