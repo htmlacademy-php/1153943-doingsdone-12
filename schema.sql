@@ -24,6 +24,6 @@ CREATE TABLE `tasks` (
     `title` text(50) NOT NULL,
     `period` text(255),
     `file` varchar(255) DEFAULT NULL,
-    `task_deadline` DATETIME,
-    `task_done` tinyint(1) default 0
+    `date_deadline` DATETIME,
+    `is_done` tinyint(1) default 0
 );
