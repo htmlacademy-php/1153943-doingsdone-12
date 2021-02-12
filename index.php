@@ -7,25 +7,40 @@
     $con = mysqli_connect("localhost", "root", "root", "schema");
     mysqli_set_charset($con, "utf8");
 
-    $sqlList = "SELECT * FROM list WHERE user_id = 2";
-    $sqlTasks = "SELECT * FROM tasks WHERE user_id = 2";
-    $sqlName = "SELECT name FROM users WHERE id = 2";
+    const USER_ID = 2;
 
-    $result = mysqli_query($con, $sqlList);
-    $resultTasks = mysqli_query($con, $sqlTasks);
-    $resultName = mysqli_query($con, $sqlName);
+    $sqlList = "SELECT * FROM list WHERE user_id = ".USER_ID;
+    $sqlTasks = "SELECT * FROM tasks WHERE user_id = ".USER_ID;
+    $sqlName = "SELECT name FROM users WHERE id = ".USER_ID;
 
-    $arrCategory = mysqli_fetch_all($result, MYSQLI_ASSOC);
-    $arrCaseSheet = mysqli_fetch_all($resultTasks, MYSQLI_ASSOC);
-    $arrNameUser = mysqli_fetch_all($resultName, MYSQLI_ASSOC);
+    function getSqlArr($inquiry) {
+        global $con;
+
+        $result = mysqli_query($con, $inquiry);
+
+        if (!$result) {
+            $error = mysqli_error($con);
+            throw new Exception("Ошибка MySQL: " . $error);
+        }
+
+        return mysqli_fetch_all($result, MYSQLI_ASSOC);
+    }
+
+    try {
+        $arrCategory = getSqlArr($sqlList);
+        $arrCaseSheet = getSqlArr($sqlTasks);
+        $arrNameUser = getSqlArr($sqlName);
+    } catch (Exception $e) {
+        echo 'Выброшено исключение: ', $e->getMessage();
+    }
 
     foreach ($arrNameUser as $user) {
         $nameUser = $user['name'];
     }
 
-    if (!$result) {
-        $error = mysqli_error($con);
-        print("Ошибка MySQL: " . $error);
+    if ($con) {
+
+        mysqli_close($con);
     }
 
     function getCountTasks($caseSheet, $category) {
