@@ -6,7 +6,7 @@
             <?php foreach ($arrCategory as $category): ?>
 
                 <li class="main-navigation__list-item">
-                    <a class="main-navigation__list-item-link" href="#"><?=$category['name']?></a>
+                    <a class="main-navigation__list-item-link" href="#"><?=$category['title']?></a>
                     <span class="main-navigation__list-item-count"><?=$category['count']?></span>
                 </li>
 
@@ -47,18 +47,18 @@
 
         <?php foreach ($arrCaseSheet as $task): ?>
 
-            <?php if(!$show_complete_tasks && $task['isDone']): continue?><?php endif; ?>
+            <?php if(!$show_complete_tasks && $task['is_done']): continue?><?php endif; ?>
 
-                <tr class="tasks__item task 
-                <?=$task['dateImportant'] ? 'task--important' : ''?> 
-                <?=$task['isDone'] ? 'task--completed' : '' ?> "type="checkbox">
+                <tr class="tasks__item task
+                <?=$task['dateImportant'] ? 'task--important' : ''?>
+                <?=$task['is_done'] ? 'task--completed' : '' ?> "type="checkbox">
                     <td class="task__select">
                         <label class="checkbox task__checkbox">
                             <input class="checkbox__input visually-hidden task__checkbox" type="checkbox" value="1">
-                            <span class="checkbox__text"><?=$task['name']?></span>
+                            <span class="checkbox__text"><?=$task['title']?></span>
                         </label>
                     </td>
-                    <td class="task__date"><?=$task['date']?></td>
+                    <td class="task__date"><?=$task['date_deadline']?></td>
                 </tr>
 
         <?php endforeach; ?>

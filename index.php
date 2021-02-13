@@ -2,73 +2,53 @@
 
     require_once 'helpers.php';
 
-    $nameUser = 'Константин';
-
     $show_complete_tasks = rand(0, 1);
 
-    $arrCategory = [
-        ['id' => 1,
-        'name' => "Входящие"],
-        ['id' => 2,
-        'name' => "Учеба"],
-        ['id' => 3,
-        'name' => "Работа"],
-        ['id' => 4,
-        'name' => "Домашние дела"],
-        ['id' => 5,
-        'name' => "Авто"]
-    ];
+    $con = mysqli_connect("localhost", "root", "root", "schema");
+    mysqli_set_charset($con, "utf8");
 
-    $arrCaseSheet = [
-        [
-            'id' => 1,
-            'name' => 'Собеседование в IT компании',
-            'date' => '01.12.2019',
-            'category' => 'Работа',
-            'isDone' => false,
-        ],
-        [
-            'id' => 2,
-            'name' => 'Выполнить тестовое задание',
-            'date' => '30.01.2021',
-            'category' => 'Работа',
-            'isDone' => false,
-        ],
-        [
-            'id' => 3,
-            'name' => 'Сделать задание первого раздела',
-            'date' => '28.01.2021',
-            'category' => 'Учеба',
-            'isDone' => true,
-        ],
-        [
-            'id' => 4,
-            'name' => 'Встреча с другом',
-            'date' => '05.02.2021',
-            'category' => 'Входящие',
-            'isDone' => false,
-        ],
-        [
-            'id' => 5,
-            'name' => 'Купить корм для кота',
-            'date' => null,
-            'category' => 'Домашние дела',
-            'isDone' => false,
-        ],
-        [
-            'id' => 6,
-            'name' => 'Заказать пиццу',
-            'date' => null,
-            'category' => 'Домашние дела',
-            'isDone' => false,
-        ],
-    ];
+    const USER_ID = 2;
+
+    $sqlList = "SELECT * FROM list WHERE user_id = ".USER_ID;
+    $sqlTasks = "SELECT * FROM tasks WHERE user_id = ".USER_ID;
+    $sqlName = "SELECT name FROM users WHERE id = ".USER_ID;
+
+    function getSqlArr($inquiry) {
+        global $con;
+
+        $result = mysqli_query($con, $inquiry);
+
+        if (!$result) {
+            $error = mysqli_error($con);
+            throw new Exception("Ошибка MySQL: " . $error);
+        }
+
+        return mysqli_fetch_all($result, MYSQLI_ASSOC);
+    }
+
+    try {
+        $arrCategory = getSqlArr($sqlList);
+        $arrCaseSheet = getSqlArr($sqlTasks);
+        $arrNameUser = getSqlArr($sqlName);
+    } catch (Exception $e) {
+        echo 'Выброшено исключение: ', $e->getMessage();
+    }
+
+    foreach ($arrNameUser as $user) {
+        $nameUser = $user['name'];
+    }
+
+    if ($con) {
+
+        mysqli_close($con);
+    }
 
     function getCountTasks($caseSheet, $category) {
         $count = 0;
 
         foreach ($caseSheet as $task) {
-            if($task['category'] == $category) {
+
+            if($task['list_id'] == $category['id']) {
                 $count++;
             }
         }
@@ -78,13 +58,14 @@
 
     function getTimeTask($date){
         $timeNow = time();
-        $timeTask = strtotime($date['date']);
+        $timeTask = strtotime($date['date_deadline']);
 
         $result = ($timeTask - $timeNow) / 3600;
 
-        if ($result < 24 && $date['date'] && !$date['isDone']) {
+        if ($result < 24 && $date['date_deadline'] && !$date['is_done']) {
             return true;
         }
+
         return false;
     };
 
@@ -94,14 +75,14 @@
         foreach ($caseSheet as $key => $tasks) {
             $caseSheet[$key]['dateImportant'] = getTimeTask($caseSheet[$key]);
 
-            $caseSheet[$key]['name'] = htmlspecialchars($caseSheet[$key]['name']);
+            $caseSheet[$key]['title'] = htmlspecialchars($caseSheet[$key]['title']);
             $caseSheet[$key]['category'] = htmlspecialchars($caseSheet[$key]['category']);
         }
 
         foreach ($category as $key => $taskLists) {
-            $category[$key]['count'] = getCountTasks($caseSheet, $category[$key]['name']);
+            $category[$key]['count'] = getCountTasks($caseSheet, $taskLists);
 
-            $category[$key]['name'] = htmlspecialchars($category[$key]['name']);
+            $category[$key]['title'] = htmlspecialchars($category[$key]['title']);
         }
 
         return [$caseSheet, $category];
