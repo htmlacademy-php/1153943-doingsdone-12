@@ -5,10 +5,8 @@
         <ul class="main-navigation__list">
             <?php foreach ($arrCategory as $category): ?>
 
-                <li class="main-navigation__list-item <?=$_GET['title'] == $category['id'] ? 'main-navigation__list-item--active' : ''?>">
-                    <a class="main-navigation__list-item-link" href =
-                        <?=$category['url']?>
-                    ><?=$category['title']?></a>
+                <li class="main-navigation__list-item <?=$_GET['category_id'] == $category['id'] ? 'main-navigation__list-item--active' : ''?>">
+                    <a class="main-navigation__list-item-link" href = "<?=$category['url']?>" ><?=$category['title']?></a>
                     <span class="main-navigation__list-item-count"><?=$category['count']?></span>
                 </li>
 
