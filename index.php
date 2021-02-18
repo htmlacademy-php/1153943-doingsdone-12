@@ -9,17 +9,17 @@
 
     $errors = [];
 
-    function project_existence_check($project_id){
+    function projectExistenceCheck($projectId){
         $result = false;
 
         $connect = connect();
 
-        if ($project_id) {
+        if ($projectId) {
 
-            $sql = "SELECT * FROM `list` WHERE `id` = " . (string)$project_id;
-            $sql_result = mysqli_query($connect, $sql);
+            $sql = "SELECT * FROM `list` WHERE `id` = " . (string)$projectId;
+            $sqlResult = mysqli_query($connect, $sql);
 
-            if ($sql_result && isset($sql_result->num_rows) && $sql_result->num_rows > 0) {
+            if ($sqlResult && isset($sqlResult->num_rows) && $sqlResult->num_rows > 0) {
                 $result = true;
             }
         }
@@ -27,20 +27,20 @@
         return $result;
     }
 
-    function value_int_check($value_name){
+    function valueIntCheck($valueName){
         $result = true;
 
-        if (!filter_input(INPUT_GET, $value_name, FILTER_SANITIZE_NUMBER_INT)) {
+        if (!filter_input(INPUT_GET, $valueName, FILTER_SANITIZE_NUMBER_INT)) {
             $result = false;
         }
 
         return $result;
     }
 
-    function validate_project_id($project_id){
+    function validateProjectId($projectId){
         $result = false;
 
-        if (value_int_check('category_id') && project_existence_check($project_id)) {
+        if (valueIntCheck('category_id') && projectExistenceCheck($projectId)) {
             $result = true;
         }
 
@@ -49,8 +49,8 @@
 
     $connect = connect();
 
-    $current_project_id = $safeCategory ?? '';
-    $current_project_id = mysqli_real_escape_string($connect, (string)$current_project_id);
+    $currentProjectId = $safeCategory ?? '';
+    $currentProjectId = mysqli_real_escape_string($connect, (string)$currentProjectId);
 
     $safeCategory = mysqli_real_escape_string($connect, $_GET['category_id']);
 
@@ -77,14 +77,14 @@
 
     $nameUser = nameUser($arrNameUser);
 
-    $page_content = include_template('main.php', ['arrCategory' => $arrCategory, 'arrCaseSheet' => $arrCaseSheet, 'show_complete_tasks' => $show_complete_tasks]);
+    $pageContent = include_template('main.php', ['arrCategory' => $arrCategory, 'arrCaseSheet' => $arrCaseSheet, 'show_complete_tasks' => $show_complete_tasks]);
 
-    if ($current_project_id) {
-        if (!validate_project_id($current_project_id)) {
-            $page_content = include_template('404.php', []);
+    if ($currentProjectId) {
+        if (!validateProjectId($currentProjectId)) {
+            $pageContent = include_template('404.php', []);
         }
     }
 
-    $layout_content = include_template('layout.php', ['content' => $page_content, 'title' => 'Дела в порядке', 'user' => $nameUser, 'errors' => $errors]);
+    $layoutContent = include_template('layout.php', ['content' => $pageContent, 'title' => 'Дела в порядке', 'user' => $nameUser, 'errors' => $errors]);
 
-    print($layout_content);
+    print($layoutContent);

@@ -26,7 +26,7 @@
         $safeTaskName = mysqli_real_escape_string($connect, $taskName);
         $safeFileUrl = mysqli_real_escape_string($connect, $fileUrl);
 
-        if ($date === NULL || $date === '') {
+        if (empty($date)) {
             $sqlAddTask = "INSERT INTO tasks (user_id, list_id, title, file) VALUES ($userId, $taskList, '$safeTaskName', '$safeFileUrl')";
         } else {
             $sqlAddTask = "INSERT INTO tasks (user_id, list_id, title, date_deadline, file) VALUES ($userId, $taskList, '$safeTaskName', '$date', '$safeFileUrl')";
@@ -66,10 +66,9 @@
         } else {
             $fileUrl = '';
         }
-        var_dump($errorsSql);
 
         if (count($errorsSql)) {
-            var_dump($errorsSql);
+            $errors[] = implode(", ", $errorsSql);
         }
 
         if(empty($errorsSql)) {
