@@ -58,6 +58,15 @@
                             <span class="checkbox__text"><?=$task['title']?></span>
                         </label>
                     </td>
+                    <td class="task__file">
+                        <?php if (!empty($task['file'])) :?>
+
+                            <a class="download-link" href="<?=$task['file']?>">
+                                Home.psd
+                            </a>
+
+                        <?php endif; ?>
+                    </td>
                     <td class="task__date"><?=$task['date_deadline']?></td>
                 </tr>
 
