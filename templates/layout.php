@@ -11,6 +11,10 @@
 
 <body>
 <h1 class="visually-hidden">Дела в порядке</h1>
+<?php foreach ($errors as $error): ?>
+    <?=isset($error) ? '<p>'. $error.'</p>' : ''?>
+
+<?php endforeach; ?>
 
 <div class="page-wrapper">
     <div class="container container--with-sidebar">
@@ -33,6 +37,7 @@
         </header>
 
         <div class="content"><?=$content?></div>
+
     </div>
 </div>
 
