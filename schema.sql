@@ -13,7 +13,7 @@ CREATE TABLE `list` (
 CREATE TABLE `users` (
     `id` INT(255) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `email` varchar(50) NOT NULL UNIQUE,
-    `password` varchar(40) NOT NULL,
+    `password` varchar(255) NOT NULL,
     `name` varchar(20) NOT NULL
 );
 
