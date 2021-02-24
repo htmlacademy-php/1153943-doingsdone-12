@@ -1,4 +1,5 @@
 <?php
+    session_start();
 
     require_once 'helpers.php';
     require_once 'function_sql.php';
@@ -6,15 +7,10 @@
 
     $required_fields = ['name', 'project'];
 
-    $show_complete_tasks = rand(0, 1);
-
-    const USER_ID = 2;
-
     $errorsSql = [];
     $errors = [];
 
-    $connect = connect();
-
+    // добавляет задачу
     function addTask($connect, $userId, $taskList, $taskName, $date, $fileUrl){
 
         if (!$connect) {
@@ -41,6 +37,8 @@
     }
 
     if($_POST['submit']) {
+        $connect = connect();
+
         foreach ($required_fields as $field) {
             if (empty($_POST[$field])) {
                 $errorsSql[$field] = 'Поле не заполнено';
@@ -61,7 +59,6 @@
             $fileUrl = '/uploads/' . $fileName;
 
             move_uploaded_file($_FILES['file']['tmp_name'], $filePath . $fileName);
-            print("<a href='$fileUrl'>$fileName</a>");
 
         } else {
             $fileUrl = '';
@@ -72,35 +69,17 @@
         }
 
         if(empty($errorsSql)) {
-            addTask($connect, 2, $_POST['project'], $_POST['name'], $_POST['date'], $fileUrl);
+            addTask($connect, $_SESSION['user']['id'], $_POST['project'], $_POST['name'], $_POST['date'], $fileUrl);
             header('Location: /index.php');
             exit;
         }
     }
 
-    $safeCategory = mysqli_real_escape_string($connect, $_GET['category_id']);
-
-    $sqlTasks = getSqlTaskList($safeCategory, USER_ID);
-    $sqlList = "SELECT * FROM list WHERE user_id = ".USER_ID;
-    $sqlTasksCount = "SELECT * FROM tasks WHERE user_id = ".USER_ID;
-    $sqlName = "SELECT name FROM users WHERE id = ".USER_ID;
-
-    try {
-        $arrCategory = getSqlArr($sqlList, $connect);
-        $arrCaseSheet = getSqlArr($sqlTasks, $connect);
-        $arrCaseSheetCount = getSqlArr($sqlTasksCount, $connect);
-        $arrNameUser = getSqlArr($sqlName, $connect);
-    } catch (Exception $e) {
-        $errors[] = $e->getMessage();
-    }
-
-    list($arrCaseSheet, $arrCategory) = updateArray($arrCaseSheet, $arrCategory, $arrCaseSheetCount, $show_complete_tasks);
-    updateArray($arrCaseSheet, $arrCategory, $arrCaseSheetCount, $show_complete_tasks);
-
-    $nameUser = nameUser($arrNameUser);
+    $nameUser = nameUser();
+    $sql = sqlInquiry();
 
     $taskContent = include_template('addTask.php', [
-        'arrCategory' => $arrCategory,
+        'arrCategory' => $sql[1],
         'errors' => $errorsSql,
     ]);
 

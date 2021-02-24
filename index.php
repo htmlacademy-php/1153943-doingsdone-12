@@ -1,14 +1,21 @@
 <?php
+    session_start();
+
     require_once 'helpers.php';
     require_once 'function_sql.php';
     require_once 'function.php';
 
-    $show_complete_tasks = rand(0, 1);
+    //Функция рандомного показа выполненных задач
 
-    const USER_ID = 2;
-
+    // Сюда приходят ошибки
     $errors = [];
 
+    // id пользователя если он авторизирован
+    if(isset($_SESSION['user'])) {
+        $userId = $_SESSION['user']['id'];
+    }
+
+    // проверяем существует ли проект
     function projectExistenceCheck($projectId){
         $result = false;
 
@@ -27,6 +34,7 @@
         return $result;
     }
 
+    // смотрим значение номера проекта
     function valueIntCheck($valueName){
         $result = true;
 
@@ -37,6 +45,7 @@
         return $result;
     }
 
+    // проверяем идентификатор проекта
     function validateProjectId($projectId){
         $result = false;
 
@@ -47,42 +56,88 @@
         return $result;
     }
 
-    $connect = connect();
-
-    $currentProjectId = $safeCategory ?? '';
-    $currentProjectId = mysqli_real_escape_string($connect, (string)$currentProjectId);
-
-    $safeCategory = mysqli_real_escape_string($connect, $_GET['category_id']);
-
-    $sqlTasks = getSqlTaskList($safeCategory, USER_ID);
-    $sqlList = "SELECT * FROM list WHERE user_id = ".USER_ID;
-    $sqlTasksCount = "SELECT * FROM tasks WHERE user_id = ".USER_ID;
-    $sqlName = "SELECT name FROM users WHERE id = ".USER_ID;
-
-    try {
-        $arrCategory = getSqlArr($sqlList, $connect);
-        $arrCaseSheet = getSqlArr($sqlTasks, $connect);
-        $arrCaseSheetCount = getSqlArr($sqlTasksCount, $connect);
-        $arrNameUser = getSqlArr($sqlName, $connect);
-    } catch (Exception $e) {
-        $errors[] = $e->getMessage();
+    // sql[0] это задач
+   // sql[1] это список
+    if(isset($_SESSION['user'])) {
+        $sql = sqlInquiry();
+        $currentProjectId = currentProjectId();
     }
 
-    if ($connect) {
-        mysqli_close($connect);
+    // получаем данные об имени
+    if(isset($_SESSION['user'])) {
+        $nameUser = nameUser();
+    } else {
+        $nameUser = 'Гость';
     }
 
-    list($arrCaseSheet, $arrCategory) = updateArray($arrCaseSheet, $arrCategory, $arrCaseSheetCount, $show_complete_tasks);
-    updateArray($arrCaseSheet, $arrCategory, $arrCaseSheetCount, $show_complete_tasks);
+    function getsafeComplited() {
+        $connect = connect();
 
-    $nameUser = nameUser($arrNameUser);
+        return mysqli_real_escape_string($connect, $_GET['show_completed']);
+    }
 
-    $pageContent = include_template('main.php', ['arrCategory' => $arrCategory, 'arrCaseSheet' => $arrCaseSheet, 'show_complete_tasks' => $show_complete_tasks]);
+    function getsafeIsDone() {
+        $connect = connect();
 
-    if ($currentProjectId) {
-        if (!validateProjectId($currentProjectId)) {
-            $pageContent = include_template('404.php', []);
+        return mysqli_real_escape_string($connect, $_GET['task_id']);
+    }
+
+    function getsafeisCheck() {
+        $connect = connect();
+
+        return mysqli_real_escape_string($connect, $_GET['check']);
+    }
+
+    $safeCompleted = getsafeComplited();
+    $getsafeIsDone = getsafeIsDone();
+    $getsafeisCheck = getsafeisCheck();
+    $searchSql = htmlspecialchars(trim(filter_input(INPUT_GET, 'search')));
+
+    function updateIsDone($connect, $userId, $task){
+
+        if (!$connect) {
+            $error = mysqli_connect_error();
+
+            $errors[] = "Ошибка подключения к базе данных " . $error;
         }
+
+        $safeUserId = mysqli_real_escape_string($connect, $userId);
+        
+        if(!$task["is_done"]) {
+            $sqlAddTask = "UPDATE tasks SET is_done = 1 WHERE id = '$safeUserId'";
+        } else {
+            $sqlAddTask = "UPDATE tasks SET is_done = 0 WHERE id = '$safeUserId'";
+        }
+
+        $result = mysqli_query($connect, $sqlAddTask);
+
+        if (!$result) {
+            $error = mysqli_error($connect);
+            $errors[] =  "Ошибка MySQL" . $error;
+        }
+    }
+
+    foreach ($sql[0] as $task) {
+        if ($getsafeIsDone == $task['id'] && $getsafeisCheck) {
+            $connect = connect();
+            updateIsDone($connect, $task['id'], $task);
+            header('Location: /index.php');
+            exit;
+        }
+    }
+
+    // смотрим пользователь авторизирован или нет и показываем содержимое
+    if(isset($_SESSION['user'])){
+        $pageContent = include_template('main.php', ['arrCategory' => $sql[1], 'arrCaseSheet' => $sql[0], 'safeCompleted' => $safeCompleted, 'getsafeIsDone' => $getsafeIsDone, 'getsafeisCheck' => $getsafeisCheck, 'searchSql' => $searchSql, 'task_arr' => $task_arr,]);
+
+        if ($currentProjectId) {
+            if (!validateProjectId($currentProjectId)) {
+                $pageContent = include_template('404.php', []);
+            }
+        }
+
+    } else {
+        $pageContent = include_template('guest.php', []);
     }
 
     $layoutContent = include_template('layout.php', ['content' => $pageContent, 'title' => 'Дела в порядке', 'user' => $nameUser, 'errors' => $errors]);

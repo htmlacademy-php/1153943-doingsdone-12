@@ -1,15 +1,18 @@
 <?php
+    session_start();
+
+    $_SESSION = [];
 
     require_once 'helpers.php';
     require_once 'function_sql.php';
     require_once 'function.php';
 
-
     $errors = [];
     $errorsSql = [];
     $requiredFields = ['email', 'password', 'name'];
 
-    function emailCheck($connect){
+    // получаем массив пользователей из бд
+    function getArrSql($connect){
         $usersInfo = [];
 
         $sqlUsersInfo = "SELECT * FROM users";
@@ -21,12 +24,14 @@
             $error = mysqli_error($connect);
             print ("Ошибка MySQL" . $error);
         }
+
         return $usersInfo;
     }
 
     $connect = connect();
-    $users = emailCheck($connect);
+    $users = getArrSql($connect);
 
+    // добавляем пользователя если все ок
     function addUser($con, $email, $password, $nameUser){
 
         if (!$con) {
@@ -55,6 +60,7 @@
         }
     }
 
+    // добавляем проверку полей
     if($_POST['submit']) {
         foreach ($requiredFields as $fields) {
             if (empty($_POST[$fields])) {
@@ -80,7 +86,7 @@
 
         if(empty($errorsSql)) {
             addUser($connect, $_POST['email'], $_POST['password'], $_POST['name']);
-            header('Location: /index.php');
+            header('Location: /auth.php');
             exit;
         }
     }
@@ -90,7 +96,6 @@
     $layoutContent = include_template('layout.php', [
         'content' => $registrationContent,
         'title' => "Дела в порядке",
-        'user' => '$nameUser',
         'errors' => $errors,
     ]);
 

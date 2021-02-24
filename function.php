@@ -1,21 +1,16 @@
 <?php
 
-    function nameUser($arr) {
-        $name = 'User';
-
-        foreach ($arr as $user) {
-            $name = $user['name'];
-        }
-
-        return $name;
-    }
-
+    // считает количество задач в каждом проекте
     function getCountTasks($caseSheet, $category, $complete_tasks) {
         $count = 0;
 
         foreach ($caseSheet as $task) {
 
-            if($task['list_id'] == $category['id'] && !$task['is_done'] && !$complete_tasks || $task['list_id'] == $category['id'] && $complete_tasks) {
+            if($task['list_id'] == $category['id'] &&
+                !$task['is_done'] &&
+                !$complete_tasks ||
+                $task['list_id'] == $category['id'] &&
+                $complete_tasks) {
                 $count++;
             }
         }
@@ -23,6 +18,7 @@
         return $count;
     }
 
+    // проверяет когда задача становится срочной
     function getTimeTask($date){
         $timeNow = time();
         $timeTask = strtotime($date['date_deadline']);
@@ -36,9 +32,23 @@
         return false;
     }
 
+    // дополняем массив из бд
+    // делаем защиту полученных данных от пользователей
+    // добавляем информацию о горячей дате
+    // добавляем информацию об наличии айди задач
+    // делаем урл для строки запроса
+    // считаем кол-во задач в списке
     function updateArray($caseSheet, $category, $countArr, $complete_tasks) {
 
         foreach ($caseSheet as $key => $tasks) {
+            $params = $_GET;
+
+            $params['task_id'] = $caseSheet[$key]['id'];
+
+            $query = http_build_query($params);
+            $url = "/" . 'index.php' . "?" . $query;
+            $caseSheet[$key]['url'] = $url;
+
             $caseSheet[$key]['dateImportant'] = getTimeTask($caseSheet[$key]);
 
             $caseSheet[$key]['title'] = htmlspecialchars($caseSheet[$key]['title']);
@@ -50,7 +60,6 @@
 
             $params['category_id'] = $category[$key]['id'];
 
-//            $scriptname = pathinfo(__FILE__, PATHINFO_BASENAME);
             $query = http_build_query($params);
             $url = "/" . 'index.php' . "?" . $query;
 

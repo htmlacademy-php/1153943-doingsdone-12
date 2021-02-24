@@ -27,3 +27,5 @@ CREATE TABLE `tasks` (
     `date_deadline` DATETIME,
     `is_done` tinyint(1) default 0
 );
+
+CREATE FULLTEXT INDEX task_search ON tasks(title);
