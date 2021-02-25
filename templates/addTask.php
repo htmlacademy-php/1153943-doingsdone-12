@@ -31,10 +31,12 @@
         <div class="form__row">
             <label class="form__label" for="project">Проект <sup>*</sup></label>
 
-            <select class="form__input form__input--select" name="project" id="project">
+            <select class="form__input form__input--select <?=isset($errors['project']) ? 'form__input--error' : ''?>" name="project" id="project">
                 <?php foreach ($arrCategory as $category): ?>
                     <option value="<?= $category['id'] ?>"><?= $category['title'] ?></option>
                 <?php endforeach; ?>
+
+                <p class="form__message"><?=$errors['project'] ?></p>
             </select>
         </div>
 

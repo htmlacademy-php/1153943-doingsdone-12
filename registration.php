@@ -7,10 +7,6 @@
     require_once 'function_sql.php';
     require_once 'function.php';
 
-    $errors = [];
-    $errorsSql = [];
-    $requiredFields = ['email', 'password', 'name'];
-
     // получаем массив пользователей из бд
     function getArrSql($connect){
         $usersInfo = [];
@@ -28,17 +24,8 @@
         return $usersInfo;
     }
 
-    $connect = connect();
-    $users = getArrSql($connect);
-
     // добавляем пользователя если все ок
     function addUser($con, $email, $password, $nameUser){
-
-        if (!$con) {
-            $error = mysqli_connect_error();
-
-            $errors[] = "Ошибка подключения к базе данных " . $error;
-        }
 
         $safeEmail = mysqli_real_escape_string($con, trim($email));
         $safePassword = mysqli_real_escape_string($con, trim($password));
@@ -46,11 +33,7 @@
 
         $passwordHash = password_hash($safePassword, PASSWORD_DEFAULT);
 
-        if (password_verify($safePassword, $passwordHash)) {
-            $sqlAddUser = "INSERT INTO users (email, password, name) VALUES ('$safeEmail', '$passwordHash', '$safeNameUser')";
-        } else {
-            echo 'Пароль неправильный.';
-        }
+        $sqlAddUser = "INSERT INTO users (email, password, name) VALUES ('$safeEmail', '$passwordHash', '$safeNameUser')";
 
         $result = mysqli_query($con, $sqlAddUser);
 
@@ -61,42 +44,57 @@
     }
 
     // добавляем проверку полей
-    if($_POST['submit']) {
-        foreach ($requiredFields as $fields) {
-            if (empty($_POST[$fields])) {
-                $errorsSql[$fields] = 'Поле не заполнено';
-            }
-        }
+    function getFormRegistration(){
+        $connect = connect();
+        $errors = [];
 
-        if (!empty($_POST['email'])) {
-            if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
-                $errorsSql['email'] = 'Введите корректный Email';
-            }
+        $users = getArrSql($connect);
+        $requiredFields = ['email', 'password', 'name'];
 
-            foreach ($users as $user) {
-                if ($user['email'] === $_POST['email']) {
-                    $errorsSql['email'] = 'Пользователь с этим Email уже зарегистрирован';
+        $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
+        $safeEmail = mysqli_real_escape_string($connect, $_POST['email']);
+        $safePass = mysqli_real_escape_string($connect, $_POST['password']);
+        $safeName = mysqli_real_escape_string($connect, $_POST['name']);
+
+        if($safeSubmit) {
+            foreach ($requiredFields as $fields) {
+                if (empty($_POST[$fields])) {
+                    $errors[$fields] = 'Поле не заполнено';
                 }
             }
-        }
 
-        if (count($errorsSql)) {
-            $errors[] = implode(", ", $errorsSql);
-        }
+            if (!empty($safeEmail)) {
+                if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
+                    $errors['email'] = 'Введите корректный Email';
+                }
 
-        if(empty($errorsSql)) {
-            addUser($connect, $_POST['email'], $_POST['password'], $_POST['name']);
-            header('Location: /auth.php');
-            exit;
+                foreach ($users as $user) {
+                    if ($user['email'] === $safeEmail) {
+                        $errors['email'] = 'Пользователь с этим Email уже зарегистрирован';
+                    }
+                }
+            }
+
+            if (count($errors)) {
+                return $errors;
+            }
+
+            if(empty($errorsSql)) {
+                addUser($connect, $safeEmail, $safePass, $safeName);
+                header('Location: /auth.php');
+                exit;
+            }
         }
     }
 
-    $registrationContent = include_template('register.php', ['errors' => $errorsSql,]);
+    $formRegistration = getFormRegistration();
+
+    $registrationContent = include_template('register.php', ['errors' => $formRegistration,]);
 
     $layoutContent = include_template('layout.php', [
         'content' => $registrationContent,
         'title' => "Дела в порядке",
-        'errors' => $errors,
+        'errors' => $formRegistration,
     ]);
 
     print($layoutContent);

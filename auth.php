@@ -3,9 +3,6 @@
     require_once 'function_sql.php';
     require_once 'function.php';
 
-    $required_fields = ['email', 'password'];
-    $errors = [];
-
     function getArrSql($connect){
         $usersInfo = [];
 
@@ -51,41 +48,54 @@
     }
 
     // проверяем поля входа
-    if($_POST['submit']) {
+    function getFormAuth(){
+        $required_fields = ['email', 'password'];
+        $errors = [];
         $connect = connect();
-        $users = getArrSql($connect);
 
+        $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
         $safeEmail = mysqli_real_escape_string($connect, trim($_POST['email']));
         $safePassword = mysqli_real_escape_string($connect, trim($_POST['password']));
 
-        foreach ($required_fields as $fields) {
-            if (empty($_POST[$fields])) {
-                $errors[$fields] = 'Данные не заполнены';
+        $users = getArrSql($connect);
+
+        if ($safeSubmit) {
+
+            foreach ($required_fields as $fields) {
+                if (empty($_POST[$fields])) {
+                    $errors[$fields] = 'Данные не заполнены';
+                }
             }
-        }
 
-        if (filter_var($safeEmail, FILTER_VALIDATE_EMAIL) === false) {
-            $errors['email'] = 'Введите корректный Email';
-        }
+            if (filter_var($safeEmail, FILTER_VALIDATE_EMAIL) === false) {
+                $errors['email'] = 'Введите корректный Email';
+            }
 
-        if(empty($errors)) {
-            $sql = "SELECT * FROM users WHERE email = '$safeEmail'";
-            $result = mysqli_query($connect, $sql);
+            if (count($errors)) {
+                return $errors;
+            }
 
-            $user = $result ? mysqli_fetch_array($result, MYSQLI_ASSOC) : null;
+            if (empty($errors)) {
+                $sql = "SELECT * FROM users WHERE email = '$safeEmail'";
+                $result = mysqli_query($connect, $sql);
 
-            if(!empty($safeEmail) && !empty($safePassword)) {
-                if(checkAuth($users) && $user) {
-                    session_start();
-                    $_SESSION['user'] = $user;
-                    header('Location: /index.php');
-                    exit;
-                } else {
-                    $errors['email'] = 'Данные не верны';
+                $user = $result ? mysqli_fetch_array($result, MYSQLI_ASSOC) : null;
+
+                if (!empty($safeEmail) && !empty($safePassword)) {
+                    if (checkAuth($users) && $user) {
+                        session_start();
+                        $_SESSION['user'] = $user;
+                        header('Location: /index.php');
+                        exit;
+                    } else {
+                        $errors['email'] = 'Данные не верны';
+                    }
                 }
             }
         }
     }
+
+    $errors = getFormAuth();
 
     $authContent = include_template('addAuth.php', [
         'errors' => $errors,

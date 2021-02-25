@@ -5,15 +5,8 @@
     require_once 'function_sql.php';
     require_once 'function.php';
 
-    $errors = [];
-
     // добавляет проект
     function addTaskList($connect, $userId, $taskList) {
-        if (!$connect) {
-            $error = mysqli_connect_error();
-
-            $errors[] = "Ошибка подключения к базе данных " . $error;
-        }
 
         $sqlAddList = "INSERT INTO list (user_id, title) VALUES ('$userId', '$taskList')";
 
@@ -26,30 +19,42 @@
     }
 
     //проверяем поля для задачи
-    if($_POST['submit']) {
+    function getFormAddList(){
         $connect = connect();
-        $safeName = mysqli_real_escape_string($connect, trim($_POST['name']));
+        $errors = [];
 
-        if(empty($safeName)) {
-            $errors['name'] = 'Поле не заполнено';
-        }
+        $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
 
-        if(empty($errors)) {
-            addTaskList($connect, $_SESSION['user']['id'],  $safeName);
-            header('Location: /index.php');
-            exit;
+        if ($safeSubmit) {
+            $safeName = mysqli_real_escape_string($connect, trim($_POST['name']));
+
+            if (empty($safeName)) {
+                $errors['name'] = 'Поле не заполнено';
+            }
+
+            if (count($errors)) {
+                return $errors;
+            }
+
+            if (empty($errors)) {
+                addTaskList($connect, $_SESSION['user']['id'], $safeName);
+                header('Location: /index.php');
+                exit;
+            }
         }
     }
+
+    $formAddList = getFormAddList();
 
     $nameUser = nameUser();
     $sql = sqlInquiry();
 
-    $taskListContent = include_template('addTaskList.php', ['arrCategory' => $sql[1], 'errors' => $errors]);
+    $taskListContent = include_template('addTaskList.php', ['arrCategory' => $sql[1], 'errors' => $formAddList]);
     $layoutContent = include_template('layout.php', [
         'content' => $taskListContent,
         'title' => "Дела в порядке",
         'user' => $nameUser,
-        'errors' => $errors,
+        'errors' => $formAddList,
     ]);
 
     print($layoutContent);
