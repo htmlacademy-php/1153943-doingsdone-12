@@ -1,27 +1,12 @@
 <?php
+    session_start();
 
     require_once 'helpers.php';
     require_once 'function_sql.php';
     require_once 'function.php';
 
-    $required_fields = ['name', 'project'];
-
-    $show_complete_tasks = rand(0, 1);
-
-    const USER_ID = 2;
-
-    $errorsSql = [];
-    $errors = [];
-
-    $connect = connect();
-
+    // добавляет задачу
     function addTask($connect, $userId, $taskList, $taskName, $date, $fileUrl){
-
-        if (!$connect) {
-            $error = mysqli_connect_error();
-
-            $errors[] = "Ошибка подключения к базе данных " . $error;
-        }
 
         $safeTaskName = mysqli_real_escape_string($connect, $taskName);
         $safeFileUrl = mysqli_real_escape_string($connect, $fileUrl);
@@ -40,20 +25,20 @@
         }
     }
 
-    if($_POST['submit']) {
-        foreach ($required_fields as $field) {
-            if (empty($_POST[$field])) {
-                $errorsSql[$field] = 'Поле не заполнено';
+    function validateFilled($name) {
+        $connect = connect();
+
+        $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
+
+        if($safeSubmit) {
+            if (empty($_POST[$name])) {
+                return "Это поле должно быть заполнено";
             }
         }
+    }
 
-        if(!is_date_valid($_POST['date']) && $_POST['date'] !== NULL && $_POST['date'] !== '') {
-            $errorsSql['date'] = 'Неверный формат даты';
-        }
-
-        if(strtotime($_POST['date']) + 86400 < time() && $_POST['date']) {
-            $errorsSql['date'] = 'Некорректная дата';
-        }
+    function validateFiles() {
+        $fileUrl = '';
 
         if (is_uploaded_file($_FILES['file']['tmp_name'])) {
             $fileName = $_FILES['file']['name'];
@@ -61,54 +46,87 @@
             $fileUrl = '/uploads/' . $fileName;
 
             move_uploaded_file($_FILES['file']['tmp_name'], $filePath . $fileName);
-            print("<a href='$fileUrl'>$fileName</a>");
 
-        } else {
-            $fileUrl = '';
         }
 
-        if (count($errorsSql)) {
-            $errors[] = implode(", ", $errorsSql);
+        return $fileUrl;
+    }
+
+    function isDateValid($date) {
+        if (!is_date_valid($date) && $date !== NULL && $date !== '') {
+            return 'Неверный формат даты';
         }
 
-        if(empty($errorsSql)) {
-            addTask($connect, 2, $_POST['project'], $_POST['name'], $_POST['date'], $fileUrl);
-            header('Location: /index.php');
-            exit;
+        if (strtotime($date) + 86400 < time() && $date) {
+            return 'Некорректная дата';
         }
     }
 
-    $safeCategory = mysqli_real_escape_string($connect, $_GET['category_id']);
+    function validateErrors() {
+        $connect = connect();
+        $errors = [];
 
-    $sqlTasks = getSqlTaskList($safeCategory, USER_ID);
-    $sqlList = "SELECT * FROM list WHERE user_id = ".USER_ID;
-    $sqlTasksCount = "SELECT * FROM tasks WHERE user_id = ".USER_ID;
-    $sqlName = "SELECT name FROM users WHERE id = ".USER_ID;
+        $requiredFields = ['name', 'project'];
 
-    try {
-        $arrCategory = getSqlArr($sqlList, $connect);
-        $arrCaseSheet = getSqlArr($sqlTasks, $connect);
-        $arrCaseSheetCount = getSqlArr($sqlTasksCount, $connect);
-        $arrNameUser = getSqlArr($sqlName, $connect);
-    } catch (Exception $e) {
-        $errors[] = $e->getMessage();
+        $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
+        $safeDate = mysqli_real_escape_string($connect, $_POST['date']);
+
+        if ($safeSubmit) {
+
+            foreach ($requiredFields as $fields) {
+                $errors[$fields] = validateFilled($fields);
+            }
+
+            if(!empty($safeDate)) {
+                $errors['date'] = isDateValid($safeDate);
+            }
+        }
+
+        return $errors;
     }
 
-    list($arrCaseSheet, $arrCategory) = updateArray($arrCaseSheet, $arrCategory, $arrCaseSheetCount, $show_complete_tasks);
-    updateArray($arrCaseSheet, $arrCategory, $arrCaseSheetCount, $show_complete_tasks);
+    function addTaskList() {
+        $connect = connect();
 
-    $nameUser = nameUser($arrNameUser);
+        $safeProject = mysqli_real_escape_string($connect, $_POST['project']);
+        $safeName = mysqli_real_escape_string($connect, $_POST['name']);
+        $safeDate = mysqli_real_escape_string($connect, $_POST['date']);
+        $fileUrl = validateFiles();
+
+        addTask($connect, $_SESSION['user']['id'], $safeProject, $safeName, $safeDate, $fileUrl);
+        header('Location: /index.php');
+        exit;
+    }
+
+    function getFormAdd(){
+        $connect = connect();
+
+        $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
+
+        if ($safeSubmit) {
+            $errors = implode(validateErrors());
+
+            if (empty($errors)) {
+                addTaskList();
+            }
+        }
+    }
+
+    $formAdd = getFormAdd();
+    $errors = validateErrors();
+
+    $nameUser = nameUser();
+    $sql = sqlInquiry();
 
     $taskContent = include_template('addTask.php', [
-        'arrCategory' => $arrCategory,
-        'errors' => $errorsSql,
+        'arrCategory' => $sql[1],
+        'errors' => $errors,
     ]);
 
     $layoutContent = include_template('layout.php', [
         'content' => $taskContent,
         'title' => "Дела в порядке",
         'user' => $nameUser,
-        'errors' => $errors,
     ]);
 
     print($layoutContent);

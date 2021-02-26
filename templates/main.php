@@ -15,29 +15,29 @@
     </nav>
 
     <a class="button button--transparent button--plus content__side-button"
-    href="pages/form-project.html" target="project_add">Добавить проект</a>
+    href="addList.php" >Добавить проект</a>
 </section>
 
 <main class="content__main">
     <h2 class="content__main-heading">Список задач</h2>
 
-    <form class="search-form" action="index.php" method="post" autocomplete="off">
-        <input class="search-form__input" type="text" name="" value="" placeholder="Поиск по задачам">
+    <form class="search-form" action="index.php" method="get" autocomplete="off">
+        <input class="search-form__input" type="text" name="search" value="<?= $searchSql ?>" placeholder="Поиск по задачам">
 
         <input class="search-form__submit" type="submit" name="" value="Искать">
     </form>
 
     <div class="tasks-controls">
         <nav class="tasks-switch">
-            <a href="/" class="tasks-switch__item tasks-switch__item--active">Все задачи</a>
-            <a href="/" class="tasks-switch__item">Повестка дня</a>
-            <a href="/" class="tasks-switch__item">Завтра</a>
-            <a href="/" class="tasks-switch__item">Просроченные</a>
+            <a href="/" class="tasks-switch__item <?=$_GET['sort_date'] == 'all' || $_GET['sort_date'] == ''? 'tasks-switch__item--active' : ''?>">Все задачи</a>
+            <a href="/index.php?sort_date=today" class="tasks-switch__item <?=$_GET['sort_date'] == 'today' ? 'tasks-switch__item--active' : ''?>">Повестка дня</a>
+            <a href="/index.php?sort_date=tomorrow" class="tasks-switch__item <?=$_GET['sort_date'] == 'tomorrow' ? 'tasks-switch__item--active' : ''?>">Завтра</a>
+            <a href="/index.php?sort_date=expired" class="tasks-switch__item <?=$_GET['sort_date'] == 'expired' ? 'tasks-switch__item--active' : ''?>">Просроченные</a>
         </nav>
 
         <label class="checkbox">
 
-            <input class="checkbox__input visually-hidden show_completed" <?= $show_complete_tasks ? 'checked' : '' ?> type="checkbox">
+            <input class="checkbox__input visually-hidden show_completed" <?= $safeCompleted ? 'checked' : '' ?> type="checkbox">
 
             <span class="checkbox__text">Показывать выполненные</span>
         </label>
@@ -47,14 +47,14 @@
 
         <?php foreach ($arrCaseSheet as $task): ?>
 
-            <?php if(!$show_complete_tasks && $task['is_done']): continue?><?php endif; ?>
+            <?php if(!$safeCompleted && $task['is_done']): continue?><?php endif; ?>
 
                 <tr class="tasks__item task
                 <?=$task['dateImportant'] ? 'task--important' : ''?>
                 <?=$task['is_done'] ? 'task--completed' : '' ?> "type="checkbox">
                     <td class="task__select">
                         <label class="checkbox task__checkbox">
-                            <input class="checkbox__input visually-hidden task__checkbox" type="checkbox" value="1">
+                            <input class="checkbox__input visually-hidden task__checkbox" <?=$getsafeIsDone == $task['id'] && $getsafeisCheck ? 'checked' : '' ?> type="checkbox" value="<?=$task['id']?>">
                             <span class="checkbox__text"><?=$task['title']?></span>
                         </label>
                     </td>
@@ -72,5 +72,8 @@
 
         <?php endforeach; ?>
 
+        <?php if (!empty($_GET['search']) && empty($arrCaseSheet)): ?>
+            <p class="error-message">Ничего не найдено по вашему запросу</p>
+        <?php endif; ?>
     </table>
 </main>
