@@ -25,58 +25,95 @@
         }
     }
 
-    function getFormAdd(){
-        $required_fields = ['name', 'project'];
-
-        $errors = [];
+    function validateFilled($name) {
         $connect = connect();
 
         $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
-        $safeProject = mysqli_real_escape_string($connect, $_POST['project']);
-        $safeName = mysqli_real_escape_string($connect, $_POST['name']);
-        $safeDate = mysqli_real_escape_string($connect, $_POST['date']);
 
-        if ($safeSubmit) {
-            $connect = connect();
-
-            foreach ($required_fields as $field) {
-                if (empty($_POST[$field])) {
-                    $errors[$field] = 'Поле не заполнено';
-                }
-            }
-
-            if (!is_date_valid($safeDate) && $safeDate !== NULL && $safeDate !== '') {
-                $errors['date'] = 'Неверный формат даты';
-            }
-
-            if (strtotime($safeDate) + 86400 < time() && $safeDate) {
-                $errors['date'] = 'Некорректная дата';
-            }
-
-            if (is_uploaded_file($_FILES['file']['tmp_name'])) {
-                $fileName = $_FILES['file']['name'];
-                $filePath = __DIR__ . '/uploads/';
-                $fileUrl = '/uploads/' . $fileName;
-
-                move_uploaded_file($_FILES['file']['tmp_name'], $filePath . $fileName);
-
-            } else {
-                $fileUrl = '';
-            }
-
-            if (count($errors)) {
-                return $errors;
-            }
-
-            if (empty($errorsSql)) {
-                addTask($connect, $_SESSION['user']['id'], $safeProject, $safeName, $safeDate, $fileUrl);
-                header('Location: /index.php');
-                exit;
+        if($safeSubmit) {
+            if (empty($_POST[$name])) {
+                return "Это поле должно быть заполнено";
             }
         }
     }
 
-    $errors = getFormAdd();
+    function validateFiles() {
+        $fileUrl = '';
+
+        if (is_uploaded_file($_FILES['file']['tmp_name'])) {
+            $fileName = $_FILES['file']['name'];
+            $filePath = __DIR__ . '/uploads/';
+            $fileUrl = '/uploads/' . $fileName;
+
+            move_uploaded_file($_FILES['file']['tmp_name'], $filePath . $fileName);
+
+        }
+
+        return $fileUrl;
+    }
+
+    function isDateValid($date) {
+        if (!is_date_valid($date) && $date !== NULL && $date !== '') {
+            return 'Неверный формат даты';
+        }
+
+        if (strtotime($date) + 86400 < time() && $date) {
+            return 'Некорректная дата';
+        }
+    }
+
+    function validateErrors() {
+        $connect = connect();
+        $errors = [];
+
+        $requiredFields = ['name', 'project'];
+
+        $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
+        $safeDate = mysqli_real_escape_string($connect, $_POST['date']);
+
+        if ($safeSubmit) {
+
+            foreach ($requiredFields as $fields) {
+                $errors[$fields] = validateFilled($fields);
+            }
+
+            if(!empty($safeDate)) {
+                $errors['date'] = isDateValid($safeDate);
+            }
+        }
+
+        return $errors;
+    }
+
+    function addTaskList() {
+        $connect = connect();
+
+        $safeProject = mysqli_real_escape_string($connect, $_POST['project']);
+        $safeName = mysqli_real_escape_string($connect, $_POST['name']);
+        $safeDate = mysqli_real_escape_string($connect, $_POST['date']);
+        $fileUrl = validateFiles();
+
+        addTask($connect, $_SESSION['user']['id'], $safeProject, $safeName, $safeDate, $fileUrl);
+        header('Location: /index.php');
+        exit;
+    }
+
+    function getFormAdd(){
+        $connect = connect();
+
+        $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
+
+        if ($safeSubmit) {
+            $errors = implode(validateErrors());
+
+            if (empty($errors)) {
+                addTaskList();
+            }
+        }
+    }
+
+    $formAdd = getFormAdd();
+    $errors = validateErrors();
 
     $nameUser = nameUser();
     $sql = sqlInquiry();
@@ -90,7 +127,6 @@
         'content' => $taskContent,
         'title' => "Дела в порядке",
         'user' => $nameUser,
-        'errors' => $errors,
     ]);
 
     print($layoutContent);

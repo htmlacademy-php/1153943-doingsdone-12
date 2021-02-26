@@ -60,7 +60,7 @@
         </div>
 
         <div class="form__row form__row--controls">
-            <?php if(!empty($errors)): ?>
+            <?php if(!empty($errors['date']) || !empty($errors['project']) || !empty($errors['name'])): ?>
                 <p class="error-message">Пожалуйста, исправьте ошибки в форме</p>
             <?php endif; ?>
             <input class="button" type="submit" name="submit" id="submit" value="<?=isset($_POST['submit']) ? 'Добавить' : 'Добавить'?>">

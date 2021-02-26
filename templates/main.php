@@ -15,7 +15,7 @@
     </nav>
 
     <a class="button button--transparent button--plus content__side-button"
-    href="addList.php" target="project_add">Добавить проект</a>
+    href="addList.php" >Добавить проект</a>
 </section>
 
 <main class="content__main">
@@ -29,10 +29,10 @@
 
     <div class="tasks-controls">
         <nav class="tasks-switch">
-            <a href="/" class="tasks-switch__item tasks-switch__item--active">Все задачи</a>
-            <a href="/" class="tasks-switch__item">Повестка дня</a>
-            <a href="/" class="tasks-switch__item">Завтра</a>
-            <a href="/" class="tasks-switch__item">Просроченные</a>
+            <a href="/" class="tasks-switch__item <?=$_GET['sort_date'] == 'all' || $_GET['sort_date'] == ''? 'tasks-switch__item--active' : ''?>">Все задачи</a>
+            <a href="/index.php?sort_date=today" class="tasks-switch__item <?=$_GET['sort_date'] == 'today' ? 'tasks-switch__item--active' : ''?>">Повестка дня</a>
+            <a href="/index.php?sort_date=tomorrow" class="tasks-switch__item <?=$_GET['sort_date'] == 'tomorrow' ? 'tasks-switch__item--active' : ''?>">Завтра</a>
+            <a href="/index.php?sort_date=expired" class="tasks-switch__item <?=$_GET['sort_date'] == 'expired' ? 'tasks-switch__item--active' : ''?>">Просроченные</a>
         </nav>
 
         <label class="checkbox">

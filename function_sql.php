@@ -31,12 +31,35 @@
         return $task_arr;
     }
 
+    function showTasksByDate ($user_id, $tab) {
+        if ($tab === 'today') {
+            $sql = "SELECT * FROM tasks WHERE user_id = ".$user_id ." AND date_deadline = CURDATE()";
+        } elseif ($tab === 'tomorrow') {
+            $sql = "SELECT * FROM tasks WHERE user_id = ".$user_id ." AND date_deadline = ADDDATE(CURDATE(),INTERVAL 1 DAY)";
+        } elseif ($tab === 'expired') {
+            $sql = "SELECT * FROM tasks WHERE user_id = ".$user_id ." AND date_deadline < CURDATE()";
+        }
+
+        return $sql;
+    }
+
+    function showTasksByCategory ($user_id, $safeCategory) {
+
+        $sql = "SELECT * FROM tasks WHERE list_id =".$safeCategory." AND user_id = ".$user_id;
+
+        return $sql;
+    }
+
     // получаем ссылку на массив задач
-    function getSqlTaskList($safeCategory, $user) {
+    function getSqlTaskList($safeCategory, $user, $safeTime) {
         $tasks = "SELECT * FROM tasks WHERE user_id = ".$user;
 
-        if($safeCategory) {
-            $tasks = "SELECT * FROM tasks WHERE list_id =".$safeCategory." AND user_id = ".$user;
+        if(!$safeTime && $safeCategory) {
+            $tasks = showTasksByCategory($user, $safeCategory);
+        }
+
+        if($safeTime && !$safeCategory){
+            $tasks = showTasksByDate($user, $safeTime);
         }
 
         return $tasks;
@@ -49,7 +72,7 @@
 
         if (!$result) {
             $error = mysqli_error($con);
-            throw new Exception('Ошибка SQL запроса ' . $error);
+            var_dump('Ошибка SQL запроса ' . $error);
         }
 
         return mysqli_fetch_all($result, MYSQLI_ASSOC);
@@ -82,38 +105,58 @@
         return $name;
     }
 
-    // делаем полный массив всех данных из бд
-    function sqlInquiry() {
+    function showTask() {
         $connect = connect();
         $userId = $_SESSION['user']['id'];
 
-        $safeCompleted = mysqli_real_escape_string($connect, $_GET['show_completed']);
         $safeCategory = mysqli_real_escape_string($connect, $_GET['category_id']);
+        $safeTime = mysqli_real_escape_string($connect, $_GET['sort_date']);
+        $safeSearch = mysqli_real_escape_string($connect, $_GET['search']);
 
-        $sqlTasks = getSqlTaskList($safeCategory, $userId);
-        $sqlList = "SELECT * FROM list WHERE user_id = ".$userId;
-        $sqlTasksCount = "SELECT * FROM tasks WHERE user_id = ".$userId;
+        $sqlTasks = getSqlTaskList($safeCategory, $userId, $safeTime);
+        $arrCaseSheet = getSqlArr($sqlTasks, $connect);
 
-        try {
-            $arrCategory = getSqlArr($sqlList, $connect);
-            $arrCaseSheet = getSqlArr($sqlTasks, $connect);
-            $arrCaseSheetCount = getSqlArr($sqlTasksCount, $connect);
+        if (isset($safeSearch)) {
+            $search = trim($safeSearch);
 
-            if (isset($_GET['search'])) {
-                $connect = connect();
-                $search = trim(filter_input(INPUT_GET, 'search', FILTER_SANITIZE_SPECIAL_CHARS));
-
-                if (!empty($search)) {
-                    $arrCaseSheet = getSearchTasks($connect, $search);
-                }
+            if (!empty($search)) {
+                $arrCaseSheet = getSearchTasks($connect, $search);
             }
-        } catch (Exception $e) {
-            $errors[] = $e->getMessage();
         }
 
-        if ($connect) {
-            mysqli_close($connect);
-        }
+        return $arrCaseSheet;
+    }
+
+    function showTaskCount() {
+        $connect = connect();
+        $userId = $_SESSION['user']['id'];
+
+        $sqlTasksCount = "SELECT * FROM tasks WHERE user_id = ".$userId;
+        $arrCaseSheetCount = getSqlArr($sqlTasksCount, $connect);
+
+        return $arrCaseSheetCount;
+    }
+
+    function showTaskList() {
+        $connect = connect();
+        $userId = $_SESSION['user']['id'];
+
+        $sqlList = "SELECT * FROM list WHERE user_id = ".$userId;
+
+        $arrCategory = getSqlArr($sqlList, $connect);
+
+        return $arrCategory;
+    }
+
+    // делаем полный массив всех данных из бд
+    function sqlInquiry() {
+        $connect = connect();
+
+        $safeCompleted = mysqli_real_escape_string($connect, $_GET['show_completed']);
+
+        $arrCategory = showTaskList();
+        $arrCaseSheetCount = showTaskCount();
+        $arrCaseSheet = showTask();
 
         list($arrCaseSheet, $arrCategory) = updateArray($arrCaseSheet, $arrCategory, $arrCaseSheetCount, $safeCompleted);
 

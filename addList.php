@@ -18,43 +18,67 @@
         }
     }
 
+    function validateName($name) {
+        $connect = connect();
+
+        $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
+
+        if($safeSubmit) {
+            if (empty($name)) {
+                return 'Поле не заполнено';
+            }
+        }
+    }
+
+    function validateErrors() {
+        $connect = connect();
+        $errors = [];
+
+        $safeName = mysqli_real_escape_string($connect, trim($_POST['name']));
+
+        if (empty($safeName)) {
+            $errors['name'] = validateName($safeName);
+        }
+
+        return $errors;
+    }
+
+    function signIn() {
+        $connect = connect();
+
+        $safeName = mysqli_real_escape_string($connect, trim($_POST['name']));
+
+        addTaskList($connect, $_SESSION['user']['id'], $safeName);
+        header('Location: /index.php');
+        exit;
+    }
+
     //проверяем поля для задачи
     function getFormAddList(){
         $connect = connect();
-        $errors = [];
 
         $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
 
         if ($safeSubmit) {
-            $safeName = mysqli_real_escape_string($connect, trim($_POST['name']));
-
-            if (empty($safeName)) {
-                $errors['name'] = 'Поле не заполнено';
-            }
-
-            if (count($errors)) {
-                return $errors;
-            }
+            $errors = implode(validateErrors());
 
             if (empty($errors)) {
-                addTaskList($connect, $_SESSION['user']['id'], $safeName);
-                header('Location: /index.php');
-                exit;
+                signIn();
             }
         }
     }
 
     $formAddList = getFormAddList();
+    $errors = validateErrors();
 
     $nameUser = nameUser();
     $sql = sqlInquiry();
 
-    $taskListContent = include_template('addTaskList.php', ['arrCategory' => $sql[1], 'errors' => $formAddList]);
+    $taskListContent = include_template('addTaskList.php', ['arrCategory' => $sql[1], 'errors' => $errors]);
     $layoutContent = include_template('layout.php', [
         'content' => $taskListContent,
         'title' => "Дела в порядке",
         'user' => $nameUser,
-        'errors' => $formAddList,
     ]);
 
     print($layoutContent);

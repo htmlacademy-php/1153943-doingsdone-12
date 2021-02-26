@@ -96,24 +96,25 @@
     }
 
     function getTapIsDone() {
-        $sql = sqlInquiry();
-        $getsafeIsDone = getsafeIsDone();
-        $getsafeisCheck = getsafeisCheck();
+        if(isset($_SESSION['user'])) {
+            $sql = sqlInquiry();
+            $getsafeIsDone = getsafeIsDone();
+            $getsafeisCheck = getsafeisCheck();
 
-        $connect = connect();
+            $connect = connect();
 
-        foreach ($sql[0] as $task) {
-            if ($getsafeIsDone == $task['id'] && $getsafeisCheck) {
+            foreach ($sql[0] as $task) {
+                if ($getsafeIsDone == $task['id'] && $getsafeisCheck) {
 
-                updateIsDone($connect, $task['id'], $task);
-                header('Location: /index.php');
-                exit;
+                    updateIsDone($connect, $task['id'], $task);
+                    header('Location: /index.php');
+                    exit;
+                }
             }
         }
     }
 
     // смотрим пользователь авторизирован или нет и показываем содержимое
-
     function getTemplateMain() {
         if(isset($_SESSION['user'])){
             $sql = sqlInquiry();
@@ -141,6 +142,6 @@
     $nameUser = getNameUser();
     getTapIsDone();
 
-    $layoutContent = include_template('layout.php', ['content' => $pageContent, 'title' => 'Дела в порядке', 'user' => $nameUser, 'errors' => $errors]);
+    $layoutContent = include_template('layout.php', ['content' => $pageContent, 'title' => 'Дела в порядке', 'user' => $nameUser]);
 
     print($layoutContent);

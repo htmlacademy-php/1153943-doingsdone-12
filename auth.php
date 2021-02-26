@@ -29,7 +29,7 @@
         return $pass;
     }
 
-    // проверяем что данные есть емаила и пароля
+    // проверяем что данные емаила и пароля есть
     function checkAuth($client) {
         $connect = connect();
 
@@ -47,55 +47,99 @@
         return $auth;
     }
 
-    // проверяем поля входа
-    function getFormAuth(){
-        $required_fields = ['email', 'password'];
-        $errors = [];
+    function validateFilled($name) {
         $connect = connect();
 
         $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
-        $safeEmail = mysqli_real_escape_string($connect, trim($_POST['email']));
-        $safePassword = mysqli_real_escape_string($connect, trim($_POST['password']));
 
-        $users = getArrSql($connect);
-
-        if ($safeSubmit) {
-
-            foreach ($required_fields as $fields) {
-                if (empty($_POST[$fields])) {
-                    $errors[$fields] = 'Данные не заполнены';
-                }
-            }
-
-            if (filter_var($safeEmail, FILTER_VALIDATE_EMAIL) === false) {
-                $errors['email'] = 'Введите корректный Email';
-            }
-
-            if (count($errors)) {
-                return $errors;
-            }
-
-            if (empty($errors)) {
-                $sql = "SELECT * FROM users WHERE email = '$safeEmail'";
-                $result = mysqli_query($connect, $sql);
-
-                $user = $result ? mysqli_fetch_array($result, MYSQLI_ASSOC) : null;
-
-                if (!empty($safeEmail) && !empty($safePassword)) {
-                    if (checkAuth($users) && $user) {
-                        session_start();
-                        $_SESSION['user'] = $user;
-                        header('Location: /index.php');
-                        exit;
-                    } else {
-                        $errors['email'] = 'Данные не верны';
-                    }
-                }
+        if($safeSubmit) {
+            if (empty($_POST[$name])) {
+                return "Это поле должно быть заполнено";
             }
         }
     }
 
-    $errors = getFormAuth();
+    function validateEmail($email) {
+        $connect = connect();
+
+        $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
+
+        if($safeSubmit) {
+            if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+                return "Введите корректный email";
+            }
+        }
+    }
+
+    function checkEmail() {
+        $connect = connect();
+        $safeEmail = mysqli_real_escape_string($connect, trim($_POST['email']));
+
+        $sql = "SELECT * FROM users WHERE email = '$safeEmail'";
+        $result = mysqli_query($connect, $sql);
+
+        $user = $result ? mysqli_fetch_array($result, MYSQLI_ASSOC) : null;
+
+        return $user;
+    }
+
+    function validateErrors() {
+        $connect = connect();
+        $errors = [];
+
+        $safeEmail = mysqli_real_escape_string($connect, $_POST['email']);
+        $safePassword = mysqli_real_escape_string($connect, trim($_POST['password']));
+
+        $requiredFields = ['email', 'password'];
+
+        $users = getArrSql($connect);
+
+        $user = checkEmail();
+
+        foreach ($requiredFields as $fields) {
+            $errors[$fields] = validateFilled($fields);
+        }
+
+        if (!empty($safeEmail)) {
+            $errors['email'] = validateEmail($safeEmail);
+        }
+
+        if (!empty($safeEmail) && !empty($safePassword)) {
+            if (!checkAuth($users) && !$user) {
+                $errors['email'] = 'Данные не верны';
+            }
+        }
+
+        return $errors;
+    }
+
+    function signIn() {
+        $user = checkEmail();
+
+        session_start();
+        $_SESSION['user'] = $user;
+        header('Location: /index.php');
+        exit;
+    }
+
+    // проверяем поля входа
+    function getFormAuth(){
+        $connect = connect();
+
+        $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
+
+        if ($safeSubmit) {
+            $errors = implode(validateErrors());
+
+            if (empty($errors)) {
+                signIn();
+            }
+        }
+    }
+
+    $getFormAuth = getFormAuth();
+
+    $errors = validateErrors();
 
     $authContent = include_template('addAuth.php', [
         'errors' => $errors,
@@ -104,7 +148,6 @@
     $layoutContent = include_template('layout.php', [
         'content' => $authContent,
         'title' => "Дела в порядке",
-        'errors' => $errors,
     ]);
 
     print($layoutContent);

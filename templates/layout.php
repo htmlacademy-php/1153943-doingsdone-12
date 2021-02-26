@@ -11,10 +11,6 @@
 
 <body class="<?=$_SESSION['user'] ? "" : 'body-background'?>">
 <h1 class="visually-hidden">Дела в порядке</h1>
-<?php foreach ($errors as $error): ?>
-    <?=isset($error) ? '<p>'. $error.'</p>' : ''?>
-
-<?php endforeach; ?>
 
 <div class="page-wrapper">
     <div class="container <?=$_SESSION['user'] ? 'container--with-sidebar' : ""?>">

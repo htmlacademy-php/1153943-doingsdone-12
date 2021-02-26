@@ -43,58 +43,92 @@
         }
     }
 
-    // добавляем проверку полей
-    function getFormRegistration(){
+    function validateFilled($name) {
         $connect = connect();
-        $errors = [];
-
-        $users = getArrSql($connect);
-        $requiredFields = ['email', 'password', 'name'];
 
         $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
-        $safeEmail = mysqli_real_escape_string($connect, $_POST['email']);
-        $safePass = mysqli_real_escape_string($connect, $_POST['password']);
-        $safeName = mysqli_real_escape_string($connect, $_POST['name']);
 
         if($safeSubmit) {
-            foreach ($requiredFields as $fields) {
-                if (empty($_POST[$fields])) {
-                    $errors[$fields] = 'Поле не заполнено';
-                }
-            }
-
-            if (!empty($safeEmail)) {
-                if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
-                    $errors['email'] = 'Введите корректный Email';
-                }
-
-                foreach ($users as $user) {
-                    if ($user['email'] === $safeEmail) {
-                        $errors['email'] = 'Пользователь с этим Email уже зарегистрирован';
-                    }
-                }
-            }
-
-            if (count($errors)) {
-                return $errors;
-            }
-
-            if(empty($errorsSql)) {
-                addUser($connect, $safeEmail, $safePass, $safeName);
-                header('Location: /auth.php');
-                exit;
+            if (empty($_POST[$name])) {
+                return "Это поле должно быть заполнено";
             }
         }
     }
 
+    function validateEmail($email, $users) {
+        $connect = connect();
+
+        $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
+
+        if($safeSubmit) {
+            if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+                return "Введите корректный email";
+            }
+
+            foreach ($users as $user) {
+                if ($user['email'] === $email) {
+                    return 'Пользователь с этим Email уже зарегистрирован';
+                }
+            }
+        }
+    }
+
+    function validateErrors() {
+        $connect = connect();
+        $errors = [];
+
+        $safeEmail = mysqli_real_escape_string($connect, $_POST['email']);
+
+        $requiredFields = ['email', 'password', 'name'];
+
+        $users = getArrSql($connect);
+
+        foreach ($requiredFields as $fields) {
+            $errors[$fields] = validateFilled($fields);
+        }
+
+        if (!empty($safeEmail)) {
+            $errors['email'] = validateEmail($safeEmail, $users);
+        }
+
+        return $errors;
+    }
+
+    function checkIn() {
+        $connect = connect();
+
+        $safeEmail = mysqli_real_escape_string($connect, $_POST['email']);
+        $safePass = mysqli_real_escape_string($connect, $_POST['password']);
+        $safeName = mysqli_real_escape_string($connect, $_POST['name']);
+
+        addUser($connect, $safeEmail, $safePass, $safeName);
+        header('Location: /auth.php');
+        exit;
+    }
+
+    // регистрируем если все ок
+    function getFormRegistration(){
+        $connect = connect();
+
+        $safeSubmit = mysqli_real_escape_string($connect, $_POST['submit']);
+
+        if($safeSubmit) {
+            $errors = implode(validateErrors());
+
+            if (empty($errors)) {
+                checkIn();
+            }
+        }
+    }
+
+    $errors = validateErrors();
     $formRegistration = getFormRegistration();
 
-    $registrationContent = include_template('register.php', ['errors' => $formRegistration,]);
+    $registrationContent = include_template('register.php', ['errors' => $errors,]);
 
     $layoutContent = include_template('layout.php', [
         'content' => $registrationContent,
         'title' => "Дела в порядке",
-        'errors' => $formRegistration,
     ]);
 
     print($layoutContent);

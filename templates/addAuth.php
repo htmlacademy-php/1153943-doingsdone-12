@@ -24,7 +24,7 @@
         </div>
 
         <div class="form__row form__row--controls">
-            <?php if(!empty($errors)): ?>
+            <?php if(!empty($errors['password']) || !empty($errors['email'])): ?>
                 <p class="error-message">Пожалуйста, исправьте ошибки в форме</p>
             <?php endif; ?>
 

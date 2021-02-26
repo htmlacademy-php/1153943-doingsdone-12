@@ -1,5 +1,4 @@
 <?php
-
     // считает количество задач в каждом проекте
     function getCountTasks($caseSheet, $category, $complete_tasks) {
         $count = 0;
@@ -33,20 +32,11 @@
     }
 
     // дополняем массив из бд
-    // делаем защиту полученных данных от пользователей
-    // добавляем информацию о горячей дате
-    // добавляем информацию об наличии айди задач
-    // делаем урл для строки запроса
-    // считаем кол-во задач в списке
+
     function updateArray($caseSheet, $category, $countArr, $complete_tasks) {
 
         foreach ($caseSheet as $key => $tasks) {
-            $params = $_GET;
-
-            $params['task_id'] = $caseSheet[$key]['id'];
-
-            $query = http_build_query($params);
-            $url = "/" . 'index.php' . "?" . $query;
+            $url = "/" . 'index.php' . "?" . $caseSheet[$key]['id'];
             $caseSheet[$key]['url'] = $url;
 
             $caseSheet[$key]['dateImportant'] = getTimeTask($caseSheet[$key]);
@@ -56,12 +46,7 @@
         }
 
         foreach ($category as $key => $taskLists) {
-            $params = $_GET;
-
-            $params['category_id'] = $category[$key]['id'];
-
-            $query = http_build_query($params);
-            $url = "/" . 'index.php' . "?" . $query;
+            $url = "/" . 'index.php' . "?" . 'category_id=' . $category[$key]['id'];
 
             $category[$key]['count'] = getCountTasks($countArr, $taskLists, $complete_tasks);
             $category[$key]['url'] = $url;
