@@ -13,7 +13,7 @@ CREATE TABLE `list` (
 CREATE TABLE `users` (
     `id` INT(255) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `email` varchar(50) NOT NULL UNIQUE,
-    `password` varchar(40) NOT NULL,
+    `password` varchar(255) NOT NULL,
     `name` varchar(20) NOT NULL
 );
 
@@ -27,3 +27,5 @@ CREATE TABLE `tasks` (
     `date_deadline` DATETIME,
     `is_done` tinyint(1) default 0
 );
+
+CREATE FULLTEXT INDEX task_search ON tasks(title);
