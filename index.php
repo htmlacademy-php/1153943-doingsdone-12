@@ -13,6 +13,18 @@ if (checkSession()) {
         $tasks = getTypeListTask($_GET['type_list']);
     }
 
+    if (!empty($_GET['task_id']) && !empty($_GET['check'])) {
+        performTask($_GET['task_id'], $_GET['check']);
+    }
+
+    if (!empty($_GET['sort_date'])) {
+        $tasks = showTasksByDate($_SESSION['id'], $_GET['sort_date']);
+    }
+
+    if (!empty($_GET['search'])) {
+        $tasks = getSearchTasks($_GET['search']);
+    }
+
     $pageContent = include_template('main.php', [
         'tasks' => $tasks,
         'searchSql' => $searchSql,

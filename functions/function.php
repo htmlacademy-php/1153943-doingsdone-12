@@ -18,6 +18,10 @@ function getCountTasks($caseSheet, $category): int
 
             $count++;
         }
+
+        if (!empty($_GET['show_completed']) && $task['list_id'] == $category['id']) {
+            $count++;
+        }
     }
 
     return $count;

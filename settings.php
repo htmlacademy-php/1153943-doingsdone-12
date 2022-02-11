@@ -7,5 +7,7 @@ require_once 'functions/add_task.php';
 require_once 'functions/registration.php';
 require_once 'functions/auth.php';
 require_once 'functions/checkSession.php';
+require_once 'functions/perform_task.php';
+
 
 session_start();

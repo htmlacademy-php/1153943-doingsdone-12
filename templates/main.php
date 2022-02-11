@@ -65,7 +65,7 @@
 
         <?php endforeach; ?>
 
-        <?php if (!empty($_GET['search']) && empty($arrCaseSheet)): ?>
+        <?php if (!empty($_GET['search']) && empty($tasks)): ?>
             <p class="error-message">Ничего не найдено по вашему запросу</p>
         <?php endif; ?>
     </table>
