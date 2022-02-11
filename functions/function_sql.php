@@ -1,6 +1,6 @@
 <?php
 
-require_once dirname(__DIR__) .'/config/connect.php';
+require_once dirname(__DIR__) . '/config/connect.php';
 
 /**
  * Функция выводит задач по искомому слову
@@ -17,7 +17,7 @@ function getSearchTasks($search): array
         print(sprintf('Ошибка подключения: %s', mysqli_connect_error()));
     }
 
-    $u_id = $_SESSION['user']['id'];
+    $u_id = $_SESSION['id'];
     $sql = 'SELECT * FROM tasks WHERE user_id = ? AND MATCH(title) AGAINST (? IN BOOLEAN MODE)';
 
     $stmt = mysqli_prepare($con, $sql);
@@ -28,18 +28,39 @@ function getSearchTasks($search): array
     return mysqli_fetch_all($res, MYSQLI_ASSOC);
 }
 
-//function showTasksByDate($user_id, $tab)
-//{
-//    if ($tab === 'today') {
-//        $sql = "SELECT * FROM tasks WHERE user_id = " . $user_id . " AND date_deadline = CURDATE()";
-//    } elseif ($tab === 'tomorrow') {
-//        $sql = "SELECT * FROM tasks WHERE user_id = " . $user_id . " AND date_deadline = ADDDATE(CURDATE(),INTERVAL 1 DAY)";
-//    } elseif ($tab === 'expired') {
-//        $sql = "SELECT * FROM tasks WHERE user_id = " . $user_id . " AND date_deadline < CURDATE()";
-//    }
-//
-//    return $sql;
-//}
+/**
+ * Функция выводит спиоск задач по дате
+ * @param $user_id
+ * @param $tab
+ * @return array
+ */
+
+function showTasksByDate($user_id, $tab): array
+{
+    $sql = '';
+
+    $con = mysqli_connect(HOST, USER, PASS, NAME);
+    mysqli_set_charset($con, "utf8");
+
+    if (!$con) {
+        print(sprintf('Ошибка подключения: %s', mysqli_connect_error()));
+    }
+
+    if ($tab === 'today') {
+        $sql = "SELECT * FROM tasks WHERE user_id = ? AND date_deadline = CURDATE()";
+    } elseif ($tab === 'tomorrow') {
+        $sql = "SELECT * FROM tasks WHERE user_id = ? AND date_deadline = ADDDATE(CURDATE(),INTERVAL 1 DAY)";
+    } elseif ($tab === 'expired') {
+        $sql = "SELECT * FROM tasks WHERE user_id = ? AND date_deadline < CURDATE()";
+    }
+
+    $stmt = mysqli_prepare($con, $sql);
+    mysqli_stmt_bind_param($stmt, 's', $user_id);
+    mysqli_stmt_execute($stmt);
+    $res = mysqli_stmt_get_result($stmt);
+
+    return mysqli_fetch_all($res, MYSQLI_ASSOC);
+}
 
 /**
  * Функция выводит задачи
@@ -69,8 +90,9 @@ function getTask(): array
 
 /**
  * Функция выводит задачи по типу листа
+ * @param $type
  * @return array
- * */
+ */
 
 function getTypeListTask($type): array
 {
