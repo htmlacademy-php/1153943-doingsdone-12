@@ -1,90 +1,41 @@
 <?php
-    require_once 'helpers.php';
-    require_once 'function_sql.php';
-    require_once 'function.php';
 
-    $show_complete_tasks = rand(0, 1);
+require 'settings.php';
 
-    const USER_ID = 2;
+$errors = [];
 
-    $errors = [];
+if (checkSession()) {
+    $searchSql = htmlspecialchars(trim(filter_input(INPUT_GET, 'search')));
 
-    function projectExistenceCheck($projectId){
-        $result = false;
+    $tasks = getTask();
 
-        $connect = connect();
-
-        if ($projectId) {
-
-            $sql = "SELECT * FROM `list` WHERE `id` = " . (string)$projectId;
-            $sqlResult = mysqli_query($connect, $sql);
-
-            if ($sqlResult && isset($sqlResult->num_rows) && $sqlResult->num_rows > 0) {
-                $result = true;
-            }
-        }
-
-        return $result;
+    if (!empty($_GET['type_list'])) {
+        $tasks = getTypeListTask($_GET['type_list']);
     }
 
-    function valueIntCheck($valueName){
-        $result = true;
-
-        if (!filter_input(INPUT_GET, $valueName, FILTER_SANITIZE_NUMBER_INT)) {
-            $result = false;
-        }
-
-        return $result;
+    if (!empty($_GET['task_id']) && !empty($_GET['check'])) {
+        performTask($_GET['task_id'], $_GET['check']);
     }
 
-    function validateProjectId($projectId){
-        $result = false;
-
-        if (valueIntCheck('category_id') && projectExistenceCheck($projectId)) {
-            $result = true;
-        }
-
-        return $result;
+    if (!empty($_GET['sort_date'])) {
+        $tasks = showTasksByDate($_SESSION['id'], $_GET['sort_date']);
     }
 
-    $connect = connect();
-
-    $currentProjectId = $safeCategory ?? '';
-    $currentProjectId = mysqli_real_escape_string($connect, (string)$currentProjectId);
-
-    $safeCategory = mysqli_real_escape_string($connect, $_GET['category_id']);
-
-    $sqlTasks = getSqlTaskList($safeCategory, USER_ID);
-    $sqlList = "SELECT * FROM list WHERE user_id = ".USER_ID;
-    $sqlTasksCount = "SELECT * FROM tasks WHERE user_id = ".USER_ID;
-    $sqlName = "SELECT name FROM users WHERE id = ".USER_ID;
-
-    try {
-        $arrCategory = getSqlArr($sqlList, $connect);
-        $arrCaseSheet = getSqlArr($sqlTasks, $connect);
-        $arrCaseSheetCount = getSqlArr($sqlTasksCount, $connect);
-        $arrNameUser = getSqlArr($sqlName, $connect);
-    } catch (Exception $e) {
-        $errors[] = $e->getMessage();
+    if (!empty($_GET['search'])) {
+        $tasks = getSearchTasks($_GET['search']);
     }
 
-    if ($connect) {
-        mysqli_close($connect);
-    }
+    $pageContent = include_template('main.php', [
+        'tasks' => $tasks,
+        'searchSql' => $searchSql,
+    ]);
+} else {
+    $pageContent = include_template('guest.php', []);
+}
 
-    list($arrCaseSheet, $arrCategory) = updateArray($arrCaseSheet, $arrCategory, $arrCaseSheetCount, $show_complete_tasks);
-    updateArray($arrCaseSheet, $arrCategory, $arrCaseSheetCount, $show_complete_tasks);
+$layoutContent = include_template('layout.php', [
+    'content' => $pageContent,
+    'title' => 'Дела в порядке',
+]);
 
-    $nameUser = nameUser($arrNameUser);
-
-    $pageContent = include_template('main.php', ['arrCategory' => $arrCategory, 'arrCaseSheet' => $arrCaseSheet, 'show_complete_tasks' => $show_complete_tasks]);
-
-    if ($currentProjectId) {
-        if (!validateProjectId($currentProjectId)) {
-            $pageContent = include_template('404.php', []);
-        }
-    }
-
-    $layoutContent = include_template('layout.php', ['content' => $pageContent, 'title' => 'Дела в порядке', 'user' => $nameUser, 'errors' => $errors]);
-
-    print($layoutContent);
+print($layoutContent);
